@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Familien-App</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #eef1f8; max-width: 430px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+  button { font-family: 'Georgia', serif; cursor: pointer; }
+  input, textarea, select { font-family: 'Georgia', serif; }
+
+  /* LOGIN */
+  #login-screen { min-height: 100vh; background: linear-gradient(160deg,#1a1a2e,#16213e,#0f3460); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .login-title { text-align: center; margin-bottom: 32px; }
+  .login-title .icon { font-size: 52px; margin-bottom: 8px; }
+  .login-title h1 { color: #fff; font-size: 26px; font-weight: 400; letter-spacing: 3px; }
+  .login-title p { color: #7a90b8; font-size: 13px; margin-top: 8px; }
+  .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 340px; }
+  .member-btn { background: rgba(255,255,255,0.06); border-radius: 22px; padding: 22px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: all .2s; border: 2px solid transparent; }
+  .member-btn:hover { opacity: .85; }
+  .member-btn .emoji { font-size: 38px; }
+  .member-btn .name { color: #fff; font-size: 16px; }
+  .member-btn .bar { width: 28px; height: 3px; border-radius: 2px; }
+
+  /* PIN */
+  .pin-box { background: rgba(255,255,255,0.07); border-radius: 24px; padding: 28px; width: 100%; max-width: 300px; border: 1px solid rgba(255,255,255,0.1); }
+  .pin-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background .15s; }
+  .pin-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+  .pin-key { padding: 14px 0; border: none; border-radius: 12px; background: rgba(255,255,255,0.1); color: #fff; font-size: 18px; transition: background .15s; }
+  .pin-key:hover { background: rgba(255,255,255,0.2); }
+  .pin-key.empty { background: transparent; cursor: default; }
+  .pin-back { width: 100%; padding: 10px; background: transparent; border: none; color: #7a90b8; font-size: 13px; }
+
+  /* HEADER */
+  #app-header { padding: 18px 20px 14px; color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+  .header-name { font-size: 20px; font-weight: 600; }
+  .header-sub { font-size: 11px; opacity: .7; letter-spacing: 1.5px; text-transform: uppercase; }
+  .logout-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 13px; }
+
+  /* TABS */
+  #tab-bar { display: flex; background: #fff; border-bottom: 1px solid #e4e8f0; overflow-x: auto; position: sticky; top: 0; z-index: 10; }
+  .tab-btn { flex: 0 0 auto; padding: 11px 14px; border: none; background: transparent; font-size: 12px; border-bottom: 3px solid transparent; font-weight: 400; white-space: nowrap; transition: all .2s; }
+
+  /* BOTTOM NAV */
+  #bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: #fff; border-top: 1px solid #e8eaf0; display: flex; z-index: 20; box-shadow: 0 -2px 12px rgba(0,0,0,0.06); }
+  .nav-btn { flex: 1; padding: 10px 4px 8px; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; transition: color .2s; }
+  .nav-btn .nav-icon { font-size: 20px; }
+
+  /* CARDS */
+  .card { background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
+  .event-card { border-left: 4px solid #888; display: flex; align-items: flex-start; gap: 12px; }
+  .todo-card { display: flex; align-items: flex-start; gap: 10px; }
+  .shop-card { display: flex; align-items: center; gap: 10px; }
+  .pin-card { border: 1px solid #f0f0f0; }
+
+  /* FORMS */
+  .input-field { width: 100%; padding: 12px 14px; border: 1px solid #e8eaf0; border-radius: 10px; font-size: 15px; font-family: Georgia,serif; margin-bottom: 12px; outline: none; display: block; }
+  .full-btn { width: 100%; padding: 13px; color: #fff; border: none; border-radius: 14px; font-size: 15px; font-family: Georgia,serif; }
+  .pill-btn { color: #fff; border: none; border-radius: 20px; padding: 7px 14px; font-size: 12px; font-family: Georgia,serif; }
+  .cancel-btn { width: 100%; padding: 11px; border: none; background: transparent; color: #bbb; font-size: 13px; margin-top: 6px; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; padding: 0 0 20px; }
+  .modal-box { background: #fff; border-radius: 24px 24px 16px 16px; padding: 28px 22px 24px; width: 100%; max-width: 430px; }
+  .modal-title { font-size: 17px; color: #333; margin-bottom: 18px; }
+
+  /* TOAST */
+  .toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); color: #fff; padding: 10px 22px; border-radius: 20px; font-size: 14px; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.2); white-space: nowrap; animation: slideDown .3s ease; }
+  @keyframes slideDown { from { opacity:0; transform: translateX(-50%) translateY(-12px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  /* MISC */
+  .empty-state { text-align: center; color: #ccc; padding: 32px 0; font-size: 14px; }
+  .section-title { font-size: 16px; color: #333; margin-bottom: 12px; }
+  .loading { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+  .check-btn { border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; flex-shrink: 0; }
+  .chip { padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-family: Georgia,serif; }
+  .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .day-btn { border: none; border-radius: 12px; padding: 7px 3px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .reaction-btn { padding: 2px 8px; border-radius: 12px; border: none; font-size: 13px; cursor: pointer; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+// ── FIREBASE CONFIG ──────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyD_ADG0IBl0r35gw5idzUSNN8bnXdllQ3g",
+  authDomain: "familien-app-f158b.firebaseapp.com",
+  projectId: "familien-app-f158b",
+  storageBucket: "familien-app-f158b.firebasestorage.app",
+  messagingSenderId: "488439040235",
+  appId: "1:488439040235:web:bb97dd98734f5dd2d68b3e",
+  measurementId: "G-XENRK0T5MM"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const MEMBERS = [
+  { id:"mama", name:"Mama", color:"#e07b8a", emoji:"👩", pin:"1234" },
+  { id:"papa", name:"Papa", color:"#5b8dee", emoji:"👨", pin:"5678" },
+  { id:"lena", name:"Lena", color:"#f5a623", emoji:"👧", pin:"1111" },
+  { id:"tim",  name:"Tim",  color:"#4cbb8a", emoji:"👦", pin:"2222" },
+];
+const CATEGORIES = [
+  {id:"school",label:"Schule",icon:"📚",color:"#6c8ebf"},
+  {id:"doctor",label:"Arzt",icon:"🏥",color:"#e07b8a"},
+  {id:"sport",label:"Sport",icon:"⚽",color:"#4cbb8a"},
+  {id:"family",label:"Familie",icon:"🏡",color:"#f5a623"},
+  {id:"birthday",label:"Geburtstag",icon:"🎂",color:"#b07fd6"},
+  {id:"other",label:"Sonstiges",icon:"📌",color:"#888"},
+];
+const PRIORITIES = [
+  {id:"high",label:"Hoch",color:"#e07b8a",icon:"🔴"},
+  {id:"medium",label:"Mittel",color:"#f5a623",icon:"🟡"},
+  {id:"low",label:"Niedrig",color:"#4cbb8a",icon:"🟢"},
+];
+const DAYS = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const TODAY = new Date();
+const todayStr = fmt(TODAY);
+
+function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function fmtDisplay(s) { if(!s) return ""; const [y,m,d]=s.split("-"); return `${d}.${m}.${y}`; }
+function getMember(id) { return MEMBERS.find(m=>m.id===id)||MEMBERS[0]; }
+function getCat(id) { return CATEGORIES.find(c=>c.id===id)||CATEGORIES[5]; }
+
+function getWeekDates(offset=0) {
+  const day = TODAY.getDay();
+  const diff = day===0 ? -6 : 1-day;
+  const mon = new Date(TODAY); mon.setDate(TODAY.getDate()+diff+offset*7);
+  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let loggedIn = null;
+let pinTarget = null;
+let pinInput = "";
+let currentTab = "calendar";
+let weekOffset = 0;
+let selectedDay = null;
+let todoTab = "general";
+let currentModal = null;
+
+let events = [], todos = [], shopping = [], chores = [], pinboard = [];
+
+// Firestore listeners
+let unsubscribers = [];
+
+// ── FIRESTORE ─────────────────────────────────────────────────────────────────
+function startListeners() {
+  unsubscribers.forEach(u => u());
+  unsubscribers = [];
+
+  const colls = [
+    { name:"events",   setter: d => { events=d; renderCurrentTab(); } },
+    { name:"todos",    setter: d => { todos=d; renderCurrentTab(); } },
+    { name:"shopping", setter: d => { shopping=d; renderCurrentTab(); } },
+    { name:"chores",   setter: d => { chores=d; renderCurrentTab(); } },
+    { name:"pinboard", setter: d => { pinboard=d; renderCurrentTab(); } },
+  ];
+
+  colls.forEach(({name, setter}) => {
+    const q = query(collection(db, name), orderBy("createdAt","desc"));
+    const unsub = onSnapshot(q, snap => {
+      setter(snap.docs.map(d => ({id:d.id, ...d.data()})));
+    });
+    unsubscribers.push(unsub);
+  });
+}
+
+async function addToFirestore(collName, data) {
+  await addDoc(collection(db, collName), { ...data, createdAt: serverTimestamp() });
+}
+
+async function updateFirestore(collName, id, data) {
+  await updateDoc(doc(db, collName, id), data);
+}
+
+async function deleteFirestore(collName, id) {
+  await deleteDoc(doc(db, collName, id));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, color="#4cbb8a") {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.style.background = color;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+}
+
+// ── RENDER HELPERS ────────────────────────────────────────────────────────────
+function el(tag, attrs={}, ...children) {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => {
+    if(k==="style" && typeof v==="object") Object.assign(e.style, v);
+    else if(k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else e.setAttribute(k, v);
+  });
+  children.forEach(c => { if(c!=null) e.appendChild(typeof c==="string" ? document.createTextNode(c) : c); });
+  return e;
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────────
+function renderLogin() {
+  document.getElementById("main-app").classList.add("hidden");
+  const screen = document.getElementById("login-screen");
+  screen.classList.remove("hidden");
+  screen.innerHTML = "";
+
+  if(!pinTarget) {
+    screen.appendChild(el("div",{class:"login-title"},
+      el("div",{class:"icon"},"🏡"),
+      el("h1",{},"Familien-App"),
+      el("p",{},"Wer bist du?")
+    ));
+    const grid = el("div",{class:"member-grid"});
+    MEMBERS.forEach(m => {
+      const btn = el("button",{class:"member-btn",style:{borderColor:`${m.color}50`}},
+        el("span",{class:"emoji"},m.emoji),
+        el("span",{class:"name"},m.name),
+        el("div",{class:"bar",style:{background:m.color}})
+      );
+      btn.addEventListener("click",()=>{ pinTarget=m; pinInput=""; renderLogin(); });
+      grid.appendChild(btn);
+    });
+    screen.appendChild(grid);
+  } else {
+    const box = el("div",{class:"pin-box",style:{borderColor:`${pinTarget.color}40`}});
+    box.appendChild(el("div",{style:{textAlign:"center",marginBottom:20}},
+      el("div",{style:{fontSize:40}},pinTarget.emoji),
+      el("div",{style:{color:"#fff",fontSize:18,marginTop:6}},pinTarget.name),
+      el("div",{style:{color:"#7a90b8",fontSize:12,marginTop:4}},"PIN eingeben")
+    ));
+    const dots = el("div",{class:"pin-dots"});
+    [0,1,2,3].forEach(i=>{
+      const d = el("div",{class:"pin-dot"});
+      if(pinInput.length>i) d.style.background = pinTarget.color;
+      dots.appendChild(d);
+    });
+    box.appendChild(dots);
+    const grid2 = el("div",{class:"pin-grid"});
+    [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
+      const btn = el("button",{class:`pin-key${k===""?" empty":""}`},String(k));
+      if(k!=="") btn.addEventListener("click",()=>{
+        if(k==="⌫") { pinInput=pinInput.slice(0,-1); renderLogin(); }
+        else if(pinInput.length<4) {
+          pinInput+=k;
+          renderLogin();
+          if(pinInput.length===4) {
+            setTimeout(()=>{
+              if(pinInput===pinTarget.pin) {
+                loggedIn=pinTarget; pinTarget=null; pinInput="";
+                startListeners();
+                renderApp();
+              } else {
+                pinInput="";
+                toast("Falsche PIN ❌","#e07b8a");
+                renderLogin();
+              }
+            },200);
+          }
+        }
+      });
+      grid2.appendChild(btn);
+    });
+    box.appendChild(grid2);
+    const back = el("button",{class:"pin-back"},"← Zurück");
+    back.addEventListener("click",()=>{ pinTarget=null; pinInput=""; renderLogin(); });
+    box.appendChild(back);
+    screen.appendChild(box);
+  }
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
+function renderApp() {
+  document.getElementById("login-screen").classList.add("hidden");
+  const app = document.getElementById("main-app");
+  app.classList.remove("hidden");
+
+  // Header
+  const header = document.getElementById("app-header");
+  header.style.background = `linear-gradient(135deg,${loggedIn.color},${loggedIn.color}bb)`;
+  header.innerHTML = "";
+  header.appendChild(el("div",{},
+    el("div",{class:"header-sub"},"Angemeldet als"),
+    el("div",{class:"header-name"},`${loggedIn.emoji} ${loggedIn.name}`)
+  ));
+  const logoutBtn = el("button",{class:"logout-btn"},"Abmelden");
+  logoutBtn.addEventListener("click",()=>{ loggedIn=null; unsubscribers.forEach(u=>u()); renderLogin(); });
+  header.appendChild(logoutBtn);
+
+  // Tab bar
+  const TABS = [{id:"calendar",icon:"📅",label:"Kalender"},{id:"todo",icon:"✅",label:"To-do"},
+    {id:"shopping",icon:"🛒",label:"Einkauf"},{id:"chores",icon:"🏠",label:"Haushalt"},{id:"pinboard",icon:"📌",label:"Pinnwand"}];
+  const tabBar = document.getElementById("tab-bar");
+  tabBar.innerHTML = "";
+  TABS.forEach(t=>{
+    const btn = el("button",{class:"tab-btn"},`${t.icon} ${t.label}`);
+    btn.style.color = currentTab===t.id ? loggedIn.color : "#999";
+    btn.style.borderBottomColor = currentTab===t.id ? loggedIn.color : "transparent";
+    btn.style.fontWeight = currentTab===t.id ? "700" : "400";
+    btn.addEventListener("click",()=>{ currentTab=t.id; renderApp(); });
+    tabBar.appendChild(btn);
+  });
+
+  // Bottom nav
+  const bottomNav = document.getElementById("bottom-nav");
+  bottomNav.innerHTML = "";
+  TABS.forEach(t=>{
+    const btn = el("button",{class:"nav-btn"},el("span",{class:"nav-icon"},t.icon),t.label);
+    btn.style.color = currentTab===t.id ? loggedIn.color : "#bbb";
+    btn.addEventListener("click",()=>{ currentTab=t.id; renderApp(); });
+    bottomNav.appendChild(btn);
+  });
+
+  renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  if(!loggedIn) return;
+  const content = document.getElementById("tab-content");
+  content.innerHTML = "";
+  if(currentTab==="calendar") renderCalendar(content);
+  else if(currentTab==="todo") renderTodo(content);
+  else if(currentTab==="shopping") renderShopping(content);
+  else if(currentTab==="chores") renderChores(content);
+  else if(currentTab==="pinboard") renderPinboard(content);
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+function renderCalendar(content) {
+  const weekDates = getWeekDates(weekOffset);
+
+  // Week header
+  const header = el("div",{style:{background:"#fff",padding:"12px 16px 10px",borderBottom:"1px solid #eee"}});
+
+  // Nav
+  const nav = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}});
+  const prevBtn = el("button",{style:{background:"none",border:"1px solid #e0e0e0",borderRadius:8,width:"32px",height:"32px",fontSize:18,color:"#666"}},"‹");
+  const nextBtn = el("button",{style:{background:"none",border:"1px solid #e0e0e0",borderRadius:8,width:"32px",height:"32px",fontSize:18,color:"#666"}},"›");
+  prevBtn.addEventListener("click",()=>{ weekOffset--; selectedDay=null; renderCurrentTab(); });
+  nextBtn.addEventListener("click",()=>{ weekOffset++; selectedDay=null; renderCurrentTab(); });
+  const label = weekOffset===0?"Diese Woche":weekOffset===1?"Nächste Woche":weekOffset===-1?"Letzte Woche":`Woche ${weekOffset>0?"+":""}${weekOffset}`;
+  nav.append(prevBtn, el("span",{style:{fontSize:14,color:"#555",fontStyle:"italic"}},label), nextBtn);
+  header.appendChild(nav);
+
+  // Week grid
+  const grid = el("div",{class:"week-grid"});
+  weekDates.forEach((d,i)=>{
+    const df = fmt(d);
+    const hasEvts = events.some(e=>e.date===df);
+    const isToday = df===todayStr;
+    const isSel = selectedDay && fmt(selectedDay)===df;
+    const btn = el("button",{class:"day-btn",style:{
+      border:"none",background:isSel?loggedIn.color:isToday?`${loggedIn.color}22`:"transparent",
+      color:isSel?"#fff":isToday?loggedIn.color:"#333"
+    }},
+      el("span",{style:{fontSize:9,opacity:.7}},DAYS[d.getDay()]),
+      el("span",{style:{fontSize:16,fontWeight:isToday?"700":"400"}},String(d.getDate()))
+    );
+    if(hasEvts) {
+      const dot = el("div",{style:{width:4,height:4,borderRadius:"50%",background:isSel?"#fff":loggedIn.color}});
+      btn.appendChild(dot);
+    }
+    btn.addEventListener("click",()=>{ selectedDay = isSel?null:d; renderCurrentTab(); });
+    grid.appendChild(btn);
+  });
+  header.appendChild(grid);
+  content.appendChild(header);
+
+  // Content area
+  const area = el("div",{style:{padding:16}});
+
+  if(selectedDay) {
+    const df = fmt(selectedDay);
+    const dayEvts = events.filter(e=>e.date===df).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+    const topRow = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}});
+    topRow.appendChild(el("div",{style:{fontWeight:700,fontSize:16,color:"#333"}},
+      `${DAYS[selectedDay.getDay()]}, ${selectedDay.getDate()}. ${MONTHS[selectedDay.getMonth()]}`));
+    const addBtn = el("button",{class:"pill-btn",style:{background:loggedIn.color}},"+ Termin");
+    addBtn.addEventListener("click",()=>openModal("event", df));
+    topRow.appendChild(addBtn);
+    area.appendChild(topRow);
+    if(!dayEvts.length) area.appendChild(el("div",{class:"empty-state"},"Keine Termine an diesem Tag"));
+    dayEvts.forEach(ev=>area.appendChild(makeEventCard(ev)));
+  } else {
+    const topRow = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}});
+    topRow.appendChild(el("h3",{class:"section-title",style:{margin:0}},"Alle Termine"));
+    const addBtn = el("button",{class:"pill-btn",style:{background:loggedIn.color}},"+ Termin");
+    addBtn.addEventListener("click",()=>openModal("event", todayStr));
+    topRow.appendChild(addBtn);
+    area.appendChild(topRow);
+    const sorted = [...events].sort((a,b)=>a.date.localeCompare(b.date));
+    if(!sorted.length) area.appendChild(el("div",{class:"empty-state"},"Noch keine Termine"));
+    sorted.forEach(ev=>area.appendChild(makeEventCard(ev)));
+  }
+  content.appendChild(area);
+}
+
+function makeEventCard(ev) {
+  const m = getMember(ev.memberId);
+  const c = getCat(ev.category);
+  const card = el("div",{class:"card event-card",style:{borderLeftColor:c.color}});
+  card.appendChild(el("div",{style:{fontSize:22,paddingTop:2}},c.icon));
+  const info = el("div",{style:{flex:1}});
+  info.appendChild(el("div",{style:{fontWeight:700,color:"#222",fontSize:15}},ev.title));
+  info.appendChild(el("div",{style:{color:"#999",fontSize:11,marginTop:2}},
+    `${fmtDisplay(ev.date)}${ev.time?" · "+ev.time:""} · ${m.emoji} ${m.name}`));
+  // Reactions
+  const reacts = el("div",{style:{display:"flex",gap:6,marginTop:6}});
+  ["👍","❤️","😮","😂"].forEach(emoji=>{
+    const myReact = (ev.reactions||{})[loggedIn.id];
+    const count = Object.values(ev.reactions||{}).filter(r=>r===emoji).length;
+    const btn = el("button",{class:"reaction-btn",style:{
+      background:myReact===emoji?`${loggedIn.color}22`:"#f5f5f5",
+      fontWeight:myReact===emoji?"700":"400"
+    }},`${emoji}${count?" "+count:""}`);
+    btn.addEventListener("click",async()=>{
+      const reactions = {...(ev.reactions||{}), [loggedIn.id]: myReact===emoji?null:emoji};
+      await updateFirestore("events", ev.id, {reactions});
+    });
+    reacts.appendChild(btn);
+  });
+  info.appendChild(reacts);
+  card.appendChild(info);
+  if(ev.memberId===loggedIn.id) {
+    const del = el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:18,padding:0}},"×");
+    del.addEventListener("click",async()=>{ await deleteFirestore("events",ev.id); toast("Gelöscht 🗑️","#e07b8a"); });
+    card.appendChild(del);
+  }
+  return card;
+}
+
+// ── TODO ──────────────────────────────────────────────────────────────────────
+function renderTodo(content) {
+  const area = el("div",{style:{padding:16}});
+  // Sub-tabs
+  const subTabs = el("div",{style:{display:"flex",background:"#fff",borderRadius:14,padding:4,marginBottom:14,gap:4}});
+  [{id:"general",label:"🌍 Allgemein"},{id:"private",label:"🔒 Privat"}].forEach(t=>{
+    const btn = el("button",{style:{
+      flex:1,padding:"10px 6px",border:"none",borderRadius:10,
+      background:todoTab===t.id?loggedIn.color:"transparent",
+      color:todoTab===t.id?"#fff":"#888",fontFamily:"Georgia,serif",fontSize:13,
+      fontWeight:todoTab===t.id?"700":"400"
+    }},t.label);
+    btn.addEventListener("click",()=>{ todoTab=t.id; renderCurrentTab(); });
+    subTabs.appendChild(btn);
+  });
+  area.appendChild(subTabs);
+  area.appendChild(el("p",{style:{color:"#aaa",fontSize:11,textAlign:"center",marginBottom:12}},
+    todoTab==="general"?"Für alle sichtbar — alle können mithelfen":"Nur du siehst diese Aufgaben"));
+
+  const filtered = todos.filter(t=>todoTab==="general"?t.type==="general":t.type==="private"&&t.memberId===loggedIn.id);
+  PRIORITIES.forEach(prio=>{
+    const items = filtered.filter(t=>t.priority===prio.id);
+    if(!items.length) return;
+    area.appendChild(el("div",{style:{fontSize:12,color:prio.color,fontWeight:700,marginBottom:6}},`${prio.icon} ${prio.label}`));
+    items.forEach(todo=>{
+      const m = getMember(todo.memberId);
+      const as = todo.assignedTo ? getMember(todo.assignedTo) : null;
+      const overdue = todo.due && todo.due<todayStr && !todo.done;
+      const card = el("div",{class:"card todo-card",style:{opacity:todo.done?.55:1}});
+      const chk = el("button",{class:"check-btn",style:{
+        width:24,height:24,border:`2px solid ${todo.done?m.color:"#ddd"}`,
+        background:todo.done?m.color:"transparent",marginTop:1
+      }},todo.done?"✓":"");
+      chk.addEventListener("click",async()=>await updateFirestore("todos",todo.id,{done:!todo.done}));
+      card.appendChild(chk);
+      const info = el("div",{style:{flex:1}});
+      info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:todo.done?"line-through":"none"}},todo.text));
+      const meta = el("div",{style:{display:"flex",gap:6,marginTop:3,flexWrap:"wrap",alignItems:"center"}});
+      meta.appendChild(el("span",{style:{fontSize:11,color:"#bbb"}},`${m.emoji} ${m.name}`));
+      if(as) meta.appendChild(el("span",{style:{fontSize:11,color:as.color}},`→ ${as.emoji} ${as.name}`));
+      if(todo.due) meta.appendChild(el("span",{style:{fontSize:11,color:overdue?"#e07b8a":"#bbb"}},`📅 ${fmtDisplay(todo.due)}${overdue?" ⚠️":""}`));
+      info.appendChild(meta);
+      card.appendChild(info);
+      const del = el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:18,padding:0}},"×");
+      del.addEventListener("click",async()=>{ await deleteFirestore("todos",todo.id); toast("Gelöscht 🗑️","#e07b8a"); });
+      card.appendChild(del);
+      area.appendChild(card);
+    });
+  });
+  if(!filtered.length) area.appendChild(el("div",{class:"empty-state"},"Keine Aufgaben"));
+  const addBtn = el("button",{class:"full-btn",style:{background:loggedIn.color,marginTop:8}},"+ Aufgabe hinzufügen");
+  addBtn.addEventListener("click",()=>openModal("todo"));
+  area.appendChild(addBtn);
+  content.appendChild(area);
+}
+
+// ── SHOPPING ──────────────────────────────────────────────────────────────────
+function renderShopping(content) {
+  const area = el("div",{style:{padding:16}});
+  const topRow = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}});
+  const leftInfo = el("div",{},
+    el("h3",{style:{fontSize:16,color:"#333"}},"🛒 Einkaufsliste"),
+    el("div",{style:{fontSize:11,color:"#aaa",marginTop:2}},`${shopping.filter(s=>!s.done).length} offen · ${shopping.filter(s=>s.done).length} erledigt`)
+  );
+  topRow.appendChild(leftInfo);
+  const clearBtn = el("button",{class:"pill-btn",style:{background:"#e07b8a"}},"Erledigt löschen");
+  clearBtn.addEventListener("click",async()=>{
+    for(const s of shopping.filter(s=>s.done)) await deleteFirestore("shopping",s.id);
+    toast("Erledigt gelöscht 🗑️","#e07b8a");
+  });
+  topRow.appendChild(clearBtn);
+  area.appendChild(topRow);
+
+  shopping.filter(s=>!s.done).forEach(item=>area.appendChild(makeShopCard(item)));
+  if(shopping.filter(s=>s.done).length) {
+    area.appendChild(el("div",{style:{fontSize:12,color:"#bbb",margin:"12px 0 8px",textAlign:"center"}},"— Erledigt —"));
+    shopping.filter(s=>s.done).forEach(item=>area.appendChild(makeShopCard(item)));
+  }
+  if(!shopping.length) area.appendChild(el("div",{class:"empty-state"},"Einkaufsliste ist leer"));
+
+  const addBtn = el("button",{class:"full-btn",style:{background:loggedIn.color,marginTop:12}},"+ Artikel hinzufügen");
+  addBtn.addEventListener("click",()=>openModal("shopping"));
+  area.appendChild(addBtn);
+  content.appendChild(area);
+}
+
+function makeShopCard(item) {
+  const m = getMember(item.memberId);
+  const card = el("div",{class:"card shop-card",style:{opacity:item.done?.5:1}});
+  const chk = el("button",{class:"check-btn",style:{
+    width:24,height:24,border:`2px solid ${item.done?"#4cbb8a":"#ddd"}`,
+    background:item.done?"#4cbb8a":"transparent"
+  }},item.done?"✓":"");
+  chk.addEventListener("click",async()=>await updateFirestore("shopping",item.id,{done:!item.done}));
+  card.appendChild(chk);
+  const info = el("div",{style:{flex:1}});
+  info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:item.done?"line-through":"none"}},item.text));
+  info.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},`${m.emoji} ${m.name} · Menge: ${item.qty||1}`));
+  card.appendChild(info);
+  const del = el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:18}},"×");
+  del.addEventListener("click",async()=>await deleteFirestore("shopping",item.id));
+  card.appendChild(del);
+  return card;
+}
+
+// ── CHORES ────────────────────────────────────────────────────────────────────
+function renderChores(content) {
+  const area = el("div",{style:{padding:16}});
+  const topRow = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}});
+  topRow.appendChild(el("h3",{style:{fontSize:16,color:"#333"}},"🏠 Haushaltsplan"));
+  const addBtn = el("button",{class:"pill-btn",style:{background:loggedIn.color}},"+ Aufgabe");
+  addBtn.addEventListener("click",()=>openModal("chore"));
+  topRow.appendChild(addBtn);
+  area.appendChild(topRow);
+
+  MEMBERS.forEach(m=>{
+    const myChores = chores.filter(c=>c.assignedTo===m.id);
+    if(!myChores.length) return;
+    const section = el("div",{style:{marginBottom:18}});
+    const header = el("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:8}});
+    header.append(el("span",{style:{fontSize:20}},m.emoji), el("span",{style:{fontWeight:700,color:m.color,fontSize:14}},m.name),
+      el("span",{style:{fontSize:11,color:"#aaa"}},`${myChores.filter(c=>c.done).length}/${myChores.length} erledigt`));
+    section.appendChild(header);
+    myChores.forEach(ch=>{
+      const card = el("div",{class:"card",style:{display:"flex",alignItems:"center",gap:12,opacity:ch.done?.6:1,marginBottom:6}});
+      const chk = el("button",{class:"check-btn",style:{
+        width:24,height:24,border:`2px solid ${ch.done?m.color:"#ddd"}`,background:ch.done?m.color:"transparent"
+      }},ch.done?"✓":"");
+      chk.addEventListener("click",async()=>await updateFirestore("chores",ch.id,{done:!ch.done}));
+      card.appendChild(chk);
+      const info = el("div",{style:{flex:1}});
+      info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:ch.done?"line-through":"none"}},ch.task));
+      info.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},["So","Mo","Di","Mi","Do","Fr","Sa"][ch.weekDay]||""));
+      card.appendChild(info);
+      section.appendChild(card);
+    });
+    area.appendChild(section);
+  });
+  if(!chores.length) area.appendChild(el("div",{class:"empty-state"},"Noch keine Haushaltsaufgaben"));
+  content.appendChild(area);
+}
+
+// ── PINBOARD ──────────────────────────────────────────────────────────────────
+function renderPinboard(content) {
+  const area = el("div",{style:{padding:16}});
+  const topRow = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}});
+  topRow.appendChild(el("h3",{style:{fontSize:16,color:"#333"}},"📌 Familien-Pinnwand"));
+  const addBtn = el("button",{class:"pill-btn",style:{background:loggedIn.color}},"+ Notiz");
+  addBtn.addEventListener("click",()=>openModal("pinboard"));
+  topRow.appendChild(addBtn);
+  area.appendChild(topRow);
+
+  const sorted = [...pinboard].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  sorted.forEach(p=>{
+    const m = getMember(p.memberId);
+    const card = el("div",{class:"card pin-card",style:{
+      background:p.pinned?"#fffbec":"#fff",
+      border:p.pinned?"2px solid #f5a62355":"1px solid #f0f0f0"
+    }});
+    card.appendChild(el("div",{style:{fontSize:14,color:"#333",lineHeight:1.5,marginBottom:8}},p.text));
+    const footer = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}});
+    footer.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},`${m.emoji} ${m.name}${p.timeStr?" · "+p.timeStr:""}`));
+    const actions = el("div",{style:{display:"flex",gap:6}});
+    const pinBtn = el("button",{style:{background:"none",border:"none",fontSize:16,color:p.pinned?"#f5a623":"#ccc"}},"📌");
+    pinBtn.addEventListener("click",async()=>await updateFirestore("pinboard",p.id,{pinned:!p.pinned}));
+    actions.appendChild(pinBtn);
+    if(p.memberId===loggedIn.id) {
+      const del = el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:18}},"×");
+      del.addEventListener("click",async()=>{ await deleteFirestore("pinboard",p.id); toast("Gelöscht","#e07b8a"); });
+      actions.appendChild(del);
+    }
+    footer.appendChild(actions);
+    card.appendChild(footer);
+    area.appendChild(card);
+  });
+  if(!pinboard.length) area.appendChild(el("div",{class:"empty-state"},"Noch keine Notizen"));
+  content.appendChild(area);
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(type, prefillDate) {
+  currentModal = type;
+  const overlay = el("div",{class:"modal-overlay"});
+  const box = el("div",{class:"modal-box"});
+  overlay.addEventListener("click",e=>{ if(e.target===overlay) overlay.remove(); });
+
+  if(type==="event") {
+    box.appendChild(el("div",{class:"modal-title"},"📅 Neuer Termin"));
+    const title = makeInput("Titel");
+    const date  = makeInput("","date"); date.value = prefillDate||todayStr;
+    const time  = makeInput("","time"); time.value = "08:00";
+    box.append(title, el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},date,time));
+
+    // Category chips
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6}},"Kategorie"));
+    let selCat = "other";
+    const chips = el("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}});
+    CATEGORIES.forEach(c=>{
+      const chip = el("button",{class:"chip",style:{
+        border:`2px solid ${selCat===c.id?c.color:"#eee"}`,
+        background:selCat===c.id?`${c.color}22`:"#fff",color:selCat===c.id?c.color:"#777"
+      }},`${c.icon} ${c.label}`);
+      chip.addEventListener("click",()=>{
+        selCat=c.id;
+        chips.querySelectorAll("button").forEach((b,i)=>{
+          const cc=CATEGORIES[i];
+          b.style.borderColor=cc.id===selCat?cc.color:"#eee";
+          b.style.background=cc.id===selCat?`${cc.color}22`:"#fff";
+          b.style.color=cc.id===selCat?cc.color:"#777";
+        });
+      });
+      chips.appendChild(chip);
+    });
+    box.appendChild(chips);
+
+    const saveBtn = el("button",{class:"full-btn",style:{background:loggedIn.color}},"Speichern");
+    saveBtn.addEventListener("click",async()=>{
+      if(!title.value.trim()) return;
+      await addToFirestore("events",{title:title.value,date:date.value,time:time.value,category:selCat,memberId:loggedIn.id,reactions:{}});
+      toast("Termin hinzugefügt ✅"); overlay.remove();
+    });
+    box.appendChild(saveBtn);
+  }
+
+  else if(type==="todo") {
+    box.appendChild(el("div",{class:"modal-title"},todoTab==="general"?"🌍 Allgemeine Aufgabe":"🔒 Private Aufgabe"));
+    const text = makeInput("Was muss erledigt werden?");
+    box.appendChild(text);
+
+    let selPrio = "medium";
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6}},"Priorität"));
+    const prioRow = el("div",{style:{display:"flex",gap:8,marginBottom:12}});
+    PRIORITIES.forEach(p=>{
+      const btn = el("button",{style:{
+        flex:1,padding:"8px 4px",border:`2px solid ${p.id===selPrio?p.color:"#eee"}`,
+        borderRadius:10,background:p.id===selPrio?`${p.color}22`:"#fff",color:p.id===selPrio?p.color:"#888",
+        fontFamily:"Georgia,serif",fontSize:12
+      }},`${p.icon}\n${p.label}`);
+      btn.addEventListener("click",()=>{
+        selPrio=p.id;
+        prioRow.querySelectorAll("button").forEach((b,i)=>{
+          const pp=PRIORITIES[i];
+          b.style.borderColor=pp.id===selPrio?pp.color:"#eee";
+          b.style.background=pp.id===selPrio?`${pp.color}22`:"#fff";
+          b.style.color=pp.id===selPrio?pp.color:"#888";
+        });
+      });
+      prioRow.appendChild(btn);
+    });
+    box.appendChild(prioRow);
+
+    const due = makeInput("Fälligkeitsdatum (optional)","date");
+    box.appendChild(due);
+
+    let selAssign = "";
+    if(todoTab==="general") {
+      box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6}},"Zuweisen an (optional)"));
+      const assignRow = el("div",{style:{display:"flex",gap:6,marginBottom:12}});
+      MEMBERS.forEach(m=>{
+        const btn = el("button",{style:{
+          flex:1,padding:"8px 4px",border:`2px solid ${selAssign===m.id?m.color:"#eee"}`,
+          borderRadius:10,background:selAssign===m.id?`${m.color}22`:"#fff",color:selAssign===m.id?m.color:"#777",
+          fontFamily:"Georgia,serif",fontSize:11
+        }},`${m.emoji}\n${m.name}`);
+        btn.addEventListener("click",()=>{
+          selAssign = selAssign===m.id?"":m.id;
+          assignRow.querySelectorAll("button").forEach((b,i)=>{
+            const mm=MEMBERS[i];
+            b.style.borderColor=mm.id===selAssign?mm.color:"#eee";
+            b.style.background=mm.id===selAssign?`${mm.color}22`:"#fff";
+            b.style.color=mm.id===selAssign?mm.color:"#777";
+          });
+        });
+        assignRow.appendChild(btn);
+      });
+      box.appendChild(assignRow);
+    }
+
+    const saveBtn = el("button",{class:"full-btn",style:{background:loggedIn.color}},"Hinzufügen");
+    saveBtn.addEventListener("click",async()=>{
+      if(!text.value.trim()) return;
+      await addToFirestore("todos",{text:text.value,done:false,type:todoTab,memberId:loggedIn.id,
+        priority:selPrio,due:due.value,assignedTo:selAssign||null});
+      toast("Aufgabe hinzugefügt ✅"); overlay.remove();
+    });
+    box.appendChild(saveBtn);
+  }
+
+  else if(type==="shopping") {
+    box.appendChild(el("div",{class:"modal-title"},"🛒 Artikel hinzufügen"));
+    const text = makeInput("Was brauchen wir?");
+    const qty  = makeInput("Menge (z.B. 2, 500g)");
+    qty.value = "1";
+    box.append(text, qty);
+    const saveBtn = el("button",{class:"full-btn",style:{background:loggedIn.color}},"Hinzufügen");
+    saveBtn.addEventListener("click",async()=>{
+      if(!text.value.trim()) return;
+      await addToFirestore("shopping",{text:text.value,qty:qty.value,done:false,memberId:loggedIn.id});
+      toast("Artikel hinzugefügt 🛒"); overlay.remove();
+    });
+    box.appendChild(saveBtn);
+  }
+
+  else if(type==="chore") {
+    box.appendChild(el("div",{class:"modal-title"},"🏠 Haushaltsaufgabe"));
+    const task = makeInput("Aufgabe (z.B. Staubsaugen)");
+    box.appendChild(task);
+
+    let selMember = "";
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6}},"Zuweisen an"));
+    const memberRow = el("div",{style:{display:"flex",gap:6,marginBottom:12}});
+    MEMBERS.forEach(m=>{
+      const btn = el("button",{style:{
+        flex:1,padding:"8px 4px",border:`2px solid ${selMember===m.id?m.color:"#eee"}`,
+        borderRadius:10,background:selMember===m.id?`${m.color}22`:"#fff",color:selMember===m.id?m.color:"#777",
+        fontFamily:"Georgia,serif",fontSize:11
+      }},`${m.emoji}\n${m.name}`);
+      btn.addEventListener("click",()=>{
+        selMember=m.id;
+        memberRow.querySelectorAll("button").forEach((b,i)=>{
+          const mm=MEMBERS[i];
+          b.style.borderColor=mm.id===selMember?mm.color:"#eee";
+          b.style.background=mm.id===selMember?`${mm.color}22`:"#fff";
+          b.style.color=mm.id===selMember?mm.color:"#777";
+        });
+      });
+      memberRow.appendChild(btn);
+    });
+    box.appendChild(memberRow);
+
+    let selDay = 1;
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6}},"Wochentag"));
+    const dayRow = el("div",{style:{display:"flex",gap:4,marginBottom:12}});
+    ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach((d,i)=>{
+      const btn = el("button",{style:{
+        flex:1,padding:"8px 2px",border:`2px solid ${selDay===i+1?loggedIn.color:"#eee"}`,
+        borderRadius:8,background:selDay===i+1?`${loggedIn.color}22`:"#fff",
+        color:selDay===i+1?loggedIn.color:"#888",fontFamily:"Georgia,serif",fontSize:10
+      }},d);
+      btn.addEventListener("click",()=>{
+        selDay=i+1;
+        dayRow.querySelectorAll("button").forEach((b,j)=>{
+          b.style.borderColor=selDay===j+1?loggedIn.color:"#eee";
+          b.style.background=selDay===j+1?`${loggedIn.color}22`:"#fff";
+          b.style.color=selDay===j+1?loggedIn.color:"#888";
+        });
+      });
+      dayRow.appendChild(btn);
+    });
+    box.appendChild(dayRow);
+
+    const saveBtn = el("button",{class:"full-btn",style:{background:loggedIn.color}},"Hinzufügen");
+    saveBtn.addEventListener("click",async()=>{
+      if(!task.value.trim()||!selMember) return;
+      await addToFirestore("chores",{task:task.value,assignedTo:selMember,weekDay:selDay,done:false});
+      toast("Aufgabe hinzugefügt 🏠"); overlay.remove();
+    });
+    box.appendChild(saveBtn);
+  }
+
+  else if(type==="pinboard") {
+    box.appendChild(el("div",{class:"modal-title"},"📌 Neue Notiz"));
+    const ta = document.createElement("textarea");
+    ta.placeholder="Schreib etwas für die Familie...";
+    ta.className="input-field"; ta.style.height="90px"; ta.style.resize="none"; ta.style.width="100%";
+    box.appendChild(ta);
+    const saveBtn = el("button",{class:"full-btn",style:{background:loggedIn.color}},"Posten");
+    saveBtn.addEventListener("click",async()=>{
+      if(!ta.value.trim()) return;
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      await addToFirestore("pinboard",{text:ta.value,memberId:loggedIn.id,timeStr,pinned:false});
+      toast("Notiz gepostet 📌"); overlay.remove();
+    });
+    box.appendChild(saveBtn);
+  }
+
+  const cancelBtn = el("button",{class:"cancel-btn"},"Abbrechen");
+  cancelBtn.addEventListener("click",()=>overlay.remove());
+  box.appendChild(cancelBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function makeInput(placeholder, type="text") {
+  const inp = document.createElement("input");
+  inp.type = type; inp.placeholder = placeholder; inp.className = "input-field";
+  return inp;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderLogin();
+</script>
+
+<!-- HTML STRUCTURE -->
+<div id="login-screen"></div>
+
+<div id="main-app" class="hidden">
+  <div id="app-header"></div>
+  <div id="tab-bar"></div>
+  <div id="tab-content"></div>
+  <div id="bottom-nav"></div>
+</div>
+
+</body>
+</html>
