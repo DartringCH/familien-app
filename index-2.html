@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Familien-App</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  (function(){ emailjs.init({ publicKey: "5mlL9C4Lb7WKkWaQd" }); })();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: #f0f2f8; max-width: 430px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+  button { font-family: 'DM Sans', sans-serif; cursor: pointer; }
+  input, textarea, select { font-family: 'DM Sans', sans-serif; }
+  h1,h2,h3 { font-family: 'Playfair Display', serif; }
+
+  /* ── WELCOME SCREEN ── */
+  #welcome-screen {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0f0c29, #302b63, #24243e);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 24px; position: relative; overflow: hidden;
+  }
+  #welcome-screen::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(120,80,255,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,100,130,0.1) 0%, transparent 60%);
+  }
+  .welcome-logo { font-size: 64px; margin-bottom: 16px; position: relative; z-index: 1; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .welcome-title { font-family:'Playfair Display',serif; color:#fff; font-size:32px; font-weight:700; text-align:center; position:relative;z-index:1; }
+  .welcome-sub { color:rgba(255,255,255,0.5); font-size:14px; margin-top:8px; text-align:center; position:relative;z-index:1; letter-spacing:0.5px; }
+  .welcome-btns { display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; margin-top:48px; position:relative;z-index:1; }
+  .btn-primary { padding:18px; border:none; border-radius:16px; font-size:16px; font-weight:600; color:#fff; cursor:pointer; transition:all .2s; }
+  .btn-primary:active { transform:scale(0.97); }
+  .btn-outline { padding:17px; border:2px solid rgba(255,255,255,0.25); border-radius:16px; font-size:16px; font-weight:500; color:#fff; background:rgba(255,255,255,0.05); cursor:pointer; backdrop-filter:blur(8px); transition:all .2s; }
+  .btn-outline:active { transform:scale(0.97); background:rgba(255,255,255,0.12); }
+
+  /* ── SETUP SCREEN ── */
+  #setup-screen {
+    min-height:100vh; background:linear-gradient(160deg,#0f0c29,#302b63,#24243e);
+    padding:40px 24px 32px; display:flex; flex-direction:column;
+  }
+  .setup-back { color:rgba(255,255,255,0.5); font-size:14px; margin-bottom:32px; background:none; border:none; padding:0; display:flex; align-items:center; gap:6px; }
+  .setup-title { font-family:'Playfair Display',serif; color:#fff; font-size:26px; margin-bottom:6px; }
+  .setup-sub { color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:32px; }
+  .form-label { color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .form-input { width:100%; padding:14px 16px; border:1.5px solid rgba(255,255,255,0.15); border-radius:12px; font-size:15px; color:#fff; background:rgba(255,255,255,0.08); backdrop-filter:blur(8px); outline:none; margin-bottom:20px; transition:border-color .2s; }
+  .form-input::placeholder { color:rgba(255,255,255,0.3); }
+  .form-input:focus { border-color:rgba(255,255,255,0.4); }
+  .member-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+  .member-input { flex:1; padding:12px 14px; border:1.5px solid rgba(255,255,255,0.15); border-radius:12px; font-size:14px; color:#fff; background:rgba(255,255,255,0.08); outline:none; }
+  .member-input::placeholder { color:rgba(255,255,255,0.3); }
+  .pin-input { width:90px; padding:12px 10px; border:1.5px solid rgba(255,255,255,0.15); border-radius:12px; font-size:14px; color:#fff; background:rgba(255,255,255,0.08); outline:none; text-align:center; letter-spacing:3px; }
+  .pin-input::placeholder { color:rgba(255,255,255,0.3); letter-spacing:0; }
+  .remove-btn { width:32px; height:32px; border-radius:50%; border:none; background:rgba(255,80,80,0.2); color:#ff6b6b; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .add-member-btn { width:100%; padding:12px; border:2px dashed rgba(255,255,255,0.2); border-radius:12px; background:transparent; color:rgba(255,255,255,0.5); font-size:14px; margin-bottom:24px; }
+  .emoji-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+  .emoji-opt { width:42px; height:42px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+  .emoji-opt.selected { border-color:#fff; background:rgba(255,255,255,0.15); }
+
+  /* ── JOIN SCREEN ── */
+  #join-screen { min-height:100vh; background:linear-gradient(160deg,#0f0c29,#302b63,#24243e); padding:40px 24px 32px; display:flex; flex-direction:column; }
+  .code-input { width:100%; padding:20px; border:2px solid rgba(255,255,255,0.2); border-radius:16px; font-size:28px; color:#fff; background:rgba(255,255,255,0.08); outline:none; text-align:center; letter-spacing:8px; font-weight:700; text-transform:uppercase; }
+  .code-input::placeholder { font-size:16px; letter-spacing:2px; font-weight:400; color:rgba(255,255,255,0.3); }
+
+  /* ── CODE DISPLAY ── */
+  #code-screen { min-height:100vh; background:linear-gradient(160deg,#0f0c29,#302b63,#24243e); padding:40px 24px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .family-code-box { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:24px; padding:32px; width:100%; max-width:320px; text-align:center; backdrop-filter:blur(10px); }
+  .family-code { font-family:'Playfair Display',serif; font-size:48px; color:#fff; letter-spacing:8px; font-weight:700; margin:16px 0; }
+  .code-hint { color:rgba(255,255,255,0.5); font-size:13px; line-height:1.6; }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen { min-height:100vh; background:linear-gradient(160deg,#0f0c29,#302b63,#24243e); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .family-name-display { font-family:'Playfair Display',serif; color:#fff; font-size:28px; text-align:center; margin-bottom:6px; }
+  .family-sub { color:rgba(255,255,255,0.4); font-size:13px; text-align:center; margin-bottom:36px; }
+  .member-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; max-width:340px; }
+  .member-card { background:rgba(255,255,255,0.06); border:2px solid transparent; border-radius:20px; padding:20px 12px; display:flex; flex-direction:column; align-items:center; gap:8px; transition:all .2s; }
+  .member-card:active { transform:scale(0.96); }
+  .member-emoji { font-size:34px; }
+  .member-name { color:#fff; font-size:15px; font-weight:500; }
+  .member-bar { width:24px; height:3px; border-radius:2px; }
+  .change-family { color:rgba(255,255,255,0.3); font-size:12px; margin-top:24px; background:none; border:none; }
+
+  /* ── PIN SCREEN ── */
+  #pin-screen { min-height:100vh; background:linear-gradient(160deg,#0f0c29,#302b63,#24243e); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .pin-box { width:100%; max-width:300px; }
+  .pin-avatar { font-size:44px; text-align:center; margin-bottom:8px; }
+  .pin-name { color:#fff; font-size:20px; text-align:center; margin-bottom:4px; font-family:'Playfair Display',serif; }
+  .pin-hint { color:rgba(255,255,255,0.4); font-size:12px; text-align:center; margin-bottom:24px; }
+  .pin-dots { display:flex; justify-content:center; gap:10px; margin-bottom:28px; }
+  .pin-dot { width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.2); transition:all .15s; }
+  .pin-dot.filled { transform:scale(1.2); }
+  .pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .pin-key { padding:16px 0; border:none; border-radius:14px; background:rgba(255,255,255,0.08); color:#fff; font-size:20px; font-weight:500; transition:all .15s; }
+  .pin-key:active { background:rgba(255,255,255,0.2); transform:scale(0.94); }
+  .pin-key.empty { background:transparent; cursor:default; }
+  .pin-back-btn { width:100%; padding:12px; background:transparent; border:none; color:rgba(255,255,255,0.4); font-size:13px; margin-top:12px; }
+
+  /* ── MAIN APP ── */
+  #app-header { padding:18px 20px 14px; color:#fff; display:flex; justify-content:space-between; align-items:center; }
+  .header-greeting { font-size:11px; opacity:.6; letter-spacing:1.5px; text-transform:uppercase; }
+  .header-name { font-family:'Playfair Display',serif; font-size:20px; }
+  .logout-btn { background:rgba(255,255,255,0.18); border:none; color:#fff; border-radius:20px; padding:7px 14px; font-size:12px; font-weight:500; }
+  #tab-bar { display:flex; background:#fff; border-bottom:1px solid #e4e8f0; overflow-x:auto; position:sticky; top:0; z-index:10; scrollbar-width:none; }
+  #tab-bar::-webkit-scrollbar { display:none; }
+  .tab-btn { flex:0 0 auto; padding:12px 14px; border:none; background:transparent; font-size:12px; border-bottom:3px solid transparent; font-weight:400; white-space:nowrap; transition:all .2s; font-family:'DM Sans',sans-serif; }
+  #bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:#fff; border-top:1px solid #e8eaf0; display:flex; z-index:20; box-shadow:0 -2px 16px rgba(0,0,0,0.08); }
+  .nav-btn { flex:1; padding:10px 4px 8px; border:none; background:transparent; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9px; font-weight:500; transition:color .2s; font-family:'DM Sans',sans-serif; }
+  .nav-icon { font-size:20px; }
+
+  /* ── CARDS ── */
+  .card { background:#fff; border-radius:16px; padding:13px 15px; margin-bottom:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+  .event-card { border-left:4px solid #888; display:flex; align-items:flex-start; gap:12px; }
+  .todo-card { display:flex; align-items:flex-start; gap:10px; }
+  .shop-card { display:flex; align-items:center; gap:10px; }
+
+  /* ── FORMS ── */
+  .input-field { width:100%; padding:13px 15px; border:1.5px solid #e8eaf0; border-radius:12px; font-size:15px; font-family:'DM Sans',sans-serif; margin-bottom:12px; outline:none; display:block; transition:border-color .2s; background:#fff; }
+  .input-field:focus { border-color:#b0b8d0; }
+  .full-btn { width:100%; padding:14px; color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:600; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .full-btn:active { transform:scale(0.98); }
+  .pill-btn { color:#fff; border:none; border-radius:20px; padding:7px 15px; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; }
+  .cancel-btn { width:100%; padding:12px; border:none; background:transparent; color:#bbb; font-size:13px; margin-top:6px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); display:flex; align-items:flex-end; justify-content:center; z-index:100; padding:0 0 20px; animation:fadeIn .2s; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal-box { background:#fff; border-radius:28px 28px 18px 18px; padding:28px 22px 24px; width:100%; max-width:430px; animation:slideUp .25s ease; }
+  @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-title { font-family:'Playfair Display',serif; font-size:20px; color:#222; margin-bottom:20px; }
+
+  /* ── TOAST ── */
+  .toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); color:#fff; padding:11px 24px; border-radius:24px; font-size:14px; font-weight:500; z-index:999; box-shadow:0 4px 20px rgba(0,0,0,0.2); white-space:nowrap; animation:toastIn .3s ease; }
+  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+  /* ── MISC ── */
+  .empty-state { text-align:center; color:#ccc; padding:36px 0; font-size:14px; }
+  .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .section-title { font-family:'Playfair Display',serif; font-size:18px; color:#222; }
+  .chip { padding:6px 13px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; border:2px solid; transition:all .15s; }
+  .check-btn { border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; flex-shrink:0; border:2px solid; transition:all .2s; }
+  .reaction-btn { padding:3px 9px; border-radius:12px; border:none; font-size:13px; cursor:pointer; transition:all .15s; }
+  .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .day-btn { border:none; border-radius:12px; padding:7px 3px; display:flex; flex-direction:column; align-items:center; gap:2px; transition:all .15s; }
+  .priority-btn { flex:1; padding:10px 4px; border:2px solid; border-radius:12px; background:#fff; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; cursor:pointer; text-align:center; transition:all .15s; }
+  .assign-btn { flex:1; padding:10px 4px; border:2px solid; border-radius:12px; background:#fff; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500; cursor:pointer; text-align:center; transition:all .15s; }
+  .hidden { display:none !important; }
+  .loading-spinner { text-align:center; padding:48px; color:#aaa; font-size:14px; }
+
+  /* Admin badge */
+  .admin-badge { background:#f5a623; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; letter-spacing:0.5px; margin-left:6px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc,
+         query, orderBy, serverTimestamp, getDoc, setDoc, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD_ADG0IBl0r35gw5idzUSNN8bnXdllQ3g",
+  authDomain: "familien-app-f158b.firebaseapp.com",
+  projectId: "familien-app-f158b",
+  storageBucket: "familien-app-f158b.firebasestorage.app",
+  messagingSenderId: "488439040235",
+  appId: "1:488439040235:web:bb97dd98734f5dd2d68b3e"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+// ── EMAILJS ───────────────────────────────────────────────────────────────────
+const EMAILJS_SERVICE  = "service_7xjrjke";
+const EMAILJS_TEMPLATE = "template_rjpf7zn";
+
+async function sendFamilyCode(toEmail, familyName, code) {
+  try {
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+      to_email: toEmail,
+      name: familyName,
+      family_code: code
+    });
+    return true;
+  } catch(e) {
+    console.error("Email error:", e);
+    return false;
+  }
+}
+
+
+const EMOJIS = ["👩","👨","👧","👦","👴","👵","🧑","👶","🐶","🐱","🦊","🐻"];
+const COLORS = ["#e07b8a","#5b8dee","#f5a623","#4cbb8a","#b07fd6","#e8704a","#3dbdb0","#e84393"];
+const CATEGORIES = [
+  {id:"school",label:"Schule",icon:"📚",color:"#6c8ebf"},
+  {id:"doctor",label:"Arzt",icon:"🏥",color:"#e07b8a"},
+  {id:"sport",label:"Sport",icon:"⚽",color:"#4cbb8a"},
+  {id:"family",label:"Familie",icon:"🏡",color:"#f5a623"},
+  {id:"birthday",label:"Geburtstag",icon:"🎂",color:"#b07fd6"},
+  {id:"other",label:"Sonstiges",icon:"📌",color:"#888"},
+];
+const PRIORITIES = [
+  {id:"high",label:"Hoch",color:"#e07b8a",icon:"🔴"},
+  {id:"medium",label:"Mittel",color:"#f5a623",icon:"🟡"},
+  {id:"low",label:"Niedrig",color:"#4cbb8a",icon:"🟢"},
+];
+const DAYS = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const TODAY = new Date();
+const todayStr = fmt(TODAY);
+
+function fmt(d) { return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fmtD(s) { if(!s) return ""; const [y,m,d]=s.split("-"); return d+"."+m+"."+y; }
+function getMember(id, members) { return members.find(m=>m.id===id)||{name:"?",emoji:"❓",color:"#888"}; }
+function getCat(id) { return CATEGORIES.find(c=>c.id===id)||CATEGORIES[5]; }
+
+function generateCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({length:6}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let familyId = null;
+let familyData = null;
+let loggedIn = null;
+let pinTarget = null;
+let pinInput = "";
+let currentTab = "calendar";
+let weekOffset = 0;
+let selectedDay = null;
+let todoTab = "general";
+let unsubscribers = [];
+let events=[], todos=[], shopping=[], chores=[], pinboard=[];
+
+// Persist family selection
+const STORAGE_KEY = "familienapp_familyid";
+function saveFamily(id) { try { localStorage.setItem(STORAGE_KEY, id); } catch(e){} }
+function getSavedFamily() { try { return localStorage.getItem(STORAGE_KEY); } catch(e){ return null; } }
+function clearSavedFamily() { try { localStorage.removeItem(STORAGE_KEY); } catch(e){} }
+
+// ── FIRESTORE ─────────────────────────────────────────────────────────────────
+function colPath(name) { return collection(db, "families", familyId, name); }
+
+function startListeners() {
+  unsubscribers.forEach(u=>u());
+  unsubscribers = [];
+  const colls = [
+    {name:"events",   set:d=>{events=d;}},
+    {name:"todos",    set:d=>{todos=d;}},
+    {name:"shopping", set:d=>{shopping=d;}},
+    {name:"chores",   set:d=>{chores=d;}},
+    {name:"pinboard", set:d=>{pinboard=d;}},
+  ];
+  colls.forEach(({name,set})=>{
+    const q = query(colPath(name), orderBy("createdAt","desc"));
+    unsubscribers.push(onSnapshot(q, snap=>{
+      set(snap.docs.map(d=>({id:d.id,...d.data()})));
+      renderCurrentTab();
+    }));
+  });
+}
+
+async function addFS(col, data) { await addDoc(colPath(col), {...data, createdAt:serverTimestamp()}); }
+async function updFS(col, id, data) { await updateDoc(doc(db,"families",familyId,col,id), data); }
+async function delFS(col, id) { await deleteDoc(doc(db,"families",familyId,col,id)); }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, color="#4cbb8a") {
+  const el = document.createElement("div");
+  el.className="toast"; el.style.background=color; el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2800);
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function showOnly(id) {
+  ["welcome-screen","setup-screen","join-screen","code-screen","login-screen","pin-screen","main-app"]
+    .forEach(s=>{ const el=document.getElementById(s); if(el) el.classList.toggle("hidden", el.id!==id); });
+}
+
+// ── WELCOME ───────────────────────────────────────────────────────────────────
+function renderWelcome() {
+  showOnly("welcome-screen");
+}
+
+// ── SETUP (Create Family) ─────────────────────────────────────────────────────
+let setupMembers = [{name:"",pin:"",emoji:"👩",color:"#e07b8a"},{name:"",pin:"",emoji:"👨",color:"#5b8dee"}];
+
+function renderSetup() {
+  showOnly("setup-screen");
+  const s = document.getElementById("setup-screen");
+  s.innerHTML = "";
+
+  const back = el("button",{class:"setup-back"},["← Zurück"]);
+  back.addEventListener("click", renderWelcome);
+  s.appendChild(back);
+
+  s.appendChild(el("h2",{class:"setup-title"},["🏡 Familie erfassen"]));
+  s.appendChild(el("p",{class:"setup-sub"},["Erstelle deine Familie als Administrator"]));
+
+  // Family name
+  s.appendChild(el("label",{class:"form-label"},["Familienname"]));
+  const famName = el("input",{class:"form-input",placeholder:"z.B. Familie Müller",type:"text"});
+  s.appendChild(famName);
+
+  s.appendChild(el("label",{class:"form-label"},["E-Mail Adresse (für Code-Wiederherstellung)"]));
+  const famEmail = el("input",{class:"form-input",placeholder:"eure@email.ch",type:"email"});
+  s.appendChild(famEmail);
+
+  // Members
+  s.appendChild(el("label",{class:"form-label"},["Familienmitglieder + PIN (4 Ziffern)"]));
+
+  const membersDiv = el("div",{id:"members-div"});
+  s.appendChild(membersDiv);
+  renderMemberRows(membersDiv);
+
+  const addBtn = el("button",{class:"add-member-btn"},["+ Mitglied hinzufügen"]);
+  addBtn.addEventListener("click",()=>{
+    setupMembers.push({name:"",pin:"",emoji:EMOJIS[setupMembers.length%EMOJIS.length],color:COLORS[setupMembers.length%COLORS.length]});
+    renderMemberRows(membersDiv);
+  });
+  s.appendChild(addBtn);
+
+  const saveBtn = el("button",{class:"btn-primary",style:{background:"linear-gradient(135deg,#667eea,#764ba2)",marginTop:8}},["Familie erstellen"]);
+  saveBtn.addEventListener("click", async()=>{
+    const name = famName.value.trim();
+    const email = famEmail.value.trim();
+    if(!name) { toast("Bitte Familienname eingeben","#e07b8a"); return; }
+    if(!email) { toast("Bitte E-Mail eingeben","#e07b8a"); return; }
+    const validMembers = setupMembers.filter(m=>m.name.trim()&&m.pin.length===4);
+    if(validMembers.length<1) { toast("Mindestens 1 Mitglied mit 4-stelliger PIN","#e07b8a"); return; }
+
+    saveBtn.textContent="Wird erstellt..."; saveBtn.disabled=true;
+    try {
+      const code = generateCode();
+      const fid = "FAM_"+code;
+      const members = validMembers.map((m,i)=>({id:"member_"+i, name:m.name.trim(), pin:m.pin, emoji:m.emoji, color:m.color, isAdmin:i===0}));
+      await setDoc(doc(db,"families",fid), { name, code, email, members, createdAt:serverTimestamp() });
+      familyId = fid; familyData = {name, code, email, members};
+      saveFamily(fid);
+      // Send code by email
+      saveBtn.textContent="Sende E-Mail...";
+      const sent = await sendFamilyCode(email, name, code);
+      if(sent) toast("Code per E-Mail gesendet! 📧");
+      else toast("Familie erstellt (E-Mail fehlgeschlagen)","#f5a623");
+      renderCodeScreen(name, code, members);
+    } catch(e) { toast("Fehler beim Erstellen","#e07b8a"); saveBtn.textContent="Familie erstellen"; saveBtn.disabled=false; }
+  });
+  s.appendChild(saveBtn);
+}
+
+function renderMemberRows(container) {
+  container.innerHTML="";
+  setupMembers.forEach((m,i)=>{
+    const row = el("div",{class:"member-row"});
+
+    // Emoji picker
+    const emojiBtn = el("button",{style:{fontSize:24,background:"rgba(255,255,255,0.1)",border:"none",borderRadius:10,width:44,height:44,cursor:"pointer"}}, [m.emoji]);
+    emojiBtn.addEventListener("click",()=>{
+      const opts = EMOJIS.map(e=>{
+        const b = el("button",{class:"emoji-opt"+(m.emoji===e?" selected":"")},[e]);
+        b.addEventListener("click",()=>{ setupMembers[i].emoji=e; renderMemberRows(container); });
+        return b;
+      });
+      // Simple inline picker
+      const picker = el("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8,padding:8,background:"rgba(255,255,255,0.1)",borderRadius:12}});
+      opts.forEach(o=>picker.appendChild(o));
+      row.parentNode.insertBefore(picker, row.nextSibling);
+      setTimeout(()=>{ document.addEventListener("click",()=>picker.remove(),{once:true}); },100);
+    });
+    row.appendChild(emojiBtn);
+
+    const nameInput = el("input",{class:"member-input",placeholder:"Name "+i+1,type:"text",value:m.name});
+    nameInput.addEventListener("input",e=>setupMembers[i].name=e.target.value);
+    row.appendChild(nameInput);
+
+    const pinInp = el("input",{class:"pin-input",placeholder:"PIN",type:"password",maxlength:4,value:m.pin});
+    pinInp.addEventListener("input",e=>{ setupMembers[i].pin=e.target.value.replace(/\D/g,"").slice(0,4); pinInp.value=setupMembers[i].pin; });
+    row.appendChild(pinInp);
+
+    if(setupMembers.length>1) {
+      const rem = el("button",{class:"remove-btn"},["×"]);
+      rem.addEventListener("click",()=>{ setupMembers.splice(i,1); renderMemberRows(container); });
+      row.appendChild(rem);
+    }
+    container.appendChild(row);
+  });
+}
+
+// ── CODE SCREEN ───────────────────────────────────────────────────────────────
+function renderCodeScreen(name, code, members) {
+  showOnly("code-screen");
+  const s = document.getElementById("code-screen");
+  s.innerHTML="";
+
+  s.appendChild(el("div",{style:{fontSize:52,marginBottom:16}},["🎉"]));
+  s.appendChild(el("h2",{style:{fontFamily:"'Playfair Display',serif",color:"#fff",fontSize:26,textAlign:"center",marginBottom:8}},[name+" ist bereit!"]));
+
+  const box = el("div",{class:"family-code-box"});
+  box.appendChild(el("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:13}},["Euer Familien-Code"]));
+  box.appendChild(el("div",{class:"family-code"},[code]));
+  box.appendChild(el("div",{class:"code-hint"},["Diesen Code mit deiner Familie teilen. Jedes Mitglied gibt ihn beim ersten Öffnen der App ein."]));
+  s.appendChild(box);
+
+  const continueBtn = el("button",{class:"btn-primary",style:{background:"linear-gradient(135deg,#667eea,#764ba2)",marginTop:28,width:"100%",maxWidth:320}},["Weiter zur App →"]);
+  continueBtn.addEventListener("click",()=>{ renderLogin(); });
+  s.appendChild(continueBtn);
+}
+
+// ── JOIN SCREEN ───────────────────────────────────────────────────────────────
+function renderJoin() {
+  showOnly("join-screen");
+  const s = document.getElementById("join-screen");
+  s.innerHTML="";
+
+  const back = el("button",{class:"setup-back"},["← Zurück"]);
+  back.addEventListener("click", renderWelcome);
+  s.appendChild(back);
+
+  s.appendChild(el("h2",{class:"setup-title"},["🔑 Familie beitreten"]));
+  s.appendChild(el("p",{class:"setup-sub"},["Gib den 6-stelligen Code deiner Familie ein"]));
+
+  const codeInput = el("input",{class:"code-input",placeholder:"z.B. AB1234",maxlength:6,type:"text"});
+  codeInput.addEventListener("input",e=>{ codeInput.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""); });
+  s.appendChild(codeInput);
+
+  const joinBtn = el("button",{class:"btn-primary",style:{background:"linear-gradient(135deg,#667eea,#764ba2)",marginTop:24,width:"100%"}},["Beitreten"]);
+  joinBtn.addEventListener("click", async()=>{
+    const code = codeInput.value.trim();
+    if(code.length!==6) { toast("Bitte 6-stelligen Code eingeben","#e07b8a"); return; }
+    joinBtn.textContent="Suche..."; joinBtn.disabled=true;
+    try {
+      const fid = "FAM_"+code;
+      const snap = await getDoc(doc(db,"families",fid));
+      if(!snap.exists()) { toast("Familie nicht gefunden ❌","#e07b8a"); joinBtn.textContent="Beitreten"; joinBtn.disabled=false; return; }
+      familyId = fid; familyData = snap.data();
+      saveFamily(fid);
+      renderLogin();
+    } catch(e) { toast("Fehler beim Suchen","#e07b8a"); joinBtn.textContent="Beitreten"; joinBtn.disabled=false; }
+  });
+  s.appendChild(joinBtn);
+
+  // Forgot code section
+  s.appendChild(el("div",{style:{marginTop:32,textAlign:"center"}},[
+    el("div",{style:{color:"rgba(255,255,255,0.3)",fontSize:13,marginBottom:16}},["— oder —"]),
+    el("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:14,marginBottom:12}},["Code vergessen? 🤔"])
+  ]));
+
+  const emailForgot = el("input",{class:"form-input",placeholder:"E-Mail der Familie eingeben",type:"email"});
+  s.appendChild(emailForgot);
+
+  const sendCodeBtn = el("button",{class:"btn-outline",style:{width:"100%"}},["📧 Code per E-Mail schicken"]);
+  sendCodeBtn.addEventListener("click", async()=>{
+    const email = emailForgot.value.trim();
+    if(!email) { toast("Bitte E-Mail eingeben","#e07b8a"); return; }
+    sendCodeBtn.textContent="Suche..."; sendCodeBtn.disabled=true;
+    try {
+      // Search for family by email
+      const q2 = query(collection(db,"families"), where("email","==",email));
+      const snap = await getDocs(q2);
+      if(snap.empty) { toast("Keine Familie mit dieser E-Mail gefunden","#e07b8a"); sendCodeBtn.textContent="📧 Code per E-Mail schicken"; sendCodeBtn.disabled=false; return; }
+      const fam = snap.docs[0].data();
+      const sent = await sendFamilyCode(email, fam.name, fam.code);
+      if(sent) toast("Code wurde an "+email+" gesendet! 📧");
+      else toast("Fehler beim Senden","#e07b8a");
+    } catch(e) { toast("Fehler","#e07b8a"); }
+    sendCodeBtn.textContent="📧 Code per E-Mail schicken"; sendCodeBtn.disabled=false;
+  });
+  s.appendChild(sendCodeBtn);
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function renderLogin() {
+  showOnly("login-screen");
+  const s = document.getElementById("login-screen");
+  s.innerHTML="";
+
+  s.appendChild(el("div",{class:"family-name-display"},[familyData.name]));
+  s.appendChild(el("p",{class:"family-sub"},["Wer bist du?"]));
+
+  const grid = el("div",{class:"member-grid"});
+  familyData.members.forEach(m=>{
+    const card = el("button",{class:"member-card",style:{borderColor:m.color+"40"}});
+    card.appendChild(el("div",{class:"member-emoji"},[m.emoji]));
+    const nameEl = el("div",{class:"member-name"},[m.name]);
+    if(m.isAdmin) nameEl.innerHTML+="<span class=\"admin-badge\">ADMIN</span>";
+    card.appendChild(nameEl);
+    card.appendChild(el("div",{class:"member-bar",style:{background:m.color}}));
+    card.addEventListener("mouseenter",()=>{ card.style.borderColor=m.color; card.style.background=m.color+"18"; });
+    card.addEventListener("mouseleave",()=>{ card.style.borderColor=m.color+"40"; card.style.background="rgba(255,255,255,0.06)"; });
+    card.addEventListener("click",()=>{ pinTarget=m; pinInput=""; renderPin(); });
+    grid.appendChild(card);
+  });
+  s.appendChild(grid);
+
+  const changeBtn = el("button",{class:"change-family"},["Familie wechseln"]);
+  changeBtn.addEventListener("click",()=>{ clearSavedFamily(); familyId=null; familyData=null; renderWelcome(); });
+  s.appendChild(changeBtn);
+
+  // Admin: delete family
+  const adminMember = familyData.members.find(m=>m.isAdmin);
+  if(adminMember) {
+    const delBtn = el("button",{style:{color:"rgba(255,80,80,0.5)",fontSize:11,background:"none",border:"none",marginTop:8,display:"block",width:"100%"}},["Familie löschen (Admin)"]);
+    delBtn.addEventListener("click",async()=>{
+      if(!confirm("Wirklich die Familie und alle Daten löschen? Das kann nicht rückgängig gemacht werden!")) return;
+      delBtn.textContent="Wird gelöscht..."; delBtn.disabled=true;
+      try {
+        const cols = ["events","todos","shopping","chores","pinboard"];
+        for(const col of cols) {
+          const snap = await getDocs(collection(db,"families",familyId,col));
+          for(const d of snap.docs) await deleteDoc(d.ref);
+        }
+        await deleteDoc(doc(db,"families",familyId));
+        clearSavedFamily(); familyId=null; familyData=null; loggedIn=null;
+        toast("Familie gelöscht 🗑️","#e07b8a");
+        setTimeout(()=>renderWelcome(), 500);
+      } catch(e) { 
+        console.error(e);
+        toast("Fehler beim Löschen","#e07b8a"); 
+        delBtn.textContent="Familie löschen (Admin)"; 
+        delBtn.disabled=false; 
+      }
+    });
+    s.appendChild(delBtn);
+  }
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function renderPin() {
+  showOnly("pin-screen");
+  const s = document.getElementById("pin-screen");
+  s.innerHTML="";
+
+  const box = el("div",{class:"pin-box"});
+  box.appendChild(el("div",{class:"pin-avatar"},[pinTarget.emoji]));
+  box.appendChild(el("div",{class:"pin-name"},[pinTarget.name]));
+  box.appendChild(el("div",{class:"pin-hint"},["PIN eingeben"]));
+
+  const dots = el("div",{class:"pin-dots"});
+  for(let i=0;i<4;i++){
+    const d = el("div",{class:"pin-dot"+(pinInput.length>i?" filled":"")});
+    if(pinInput.length>i) d.style.background = pinTarget.color;
+    dots.appendChild(d);
+  }
+  box.appendChild(dots);
+
+  const grid = el("div",{class:"pin-grid"});
+  [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
+    const btn = el("button",{class:"pin-key"+(k===""?" empty":"")},[String(k)]);
+    if(k!=="") btn.addEventListener("click",()=>{
+      if(k==="⌫"){ pinInput=pinInput.slice(0,-1); renderPin(); }
+      else if(pinInput.length<4){
+        pinInput+=k; renderPin();
+        if(pinInput.length===4) setTimeout(()=>{
+          if(pinInput===pinTarget.pin){
+            loggedIn=pinTarget; pinTarget=null; pinInput="";
+            startListeners(); renderApp();
+          } else { pinInput=""; toast("Falsche PIN ❌","#e07b8a"); renderPin(); }
+        },200);
+      }
+    });
+    grid.appendChild(btn);
+  });
+  box.appendChild(grid);
+
+  const backBtn = el("button",{class:"pin-back-btn"},["← Zurück"]);
+  backBtn.addEventListener("click",()=>{ pinTarget=null; pinInput=""; renderLogin(); });
+  box.appendChild(backBtn);
+  s.appendChild(box);
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
+const TABS = [
+  {id:"calendar",icon:"📅",label:"Kalender"},
+  {id:"todo",icon:"✅",label:"To-do"},
+  {id:"shopping",icon:"🛒",label:"Einkauf"},
+  {id:"chores",icon:"🏠",label:"Haushalt"},
+  {id:"pinboard",icon:"📌",label:"Pinnwand"},
+];
+
+function renderApp() {
+  showOnly("main-app");
+  const me = loggedIn;
+
+  // Header
+  const header = document.getElementById("app-header");
+  header.style.background = "linear-gradient(135deg,"+me.color+","+me.color+"cc)";
+  header.innerHTML="";
+  header.appendChild(el("div",{},[
+    el("div",{class:"header-greeting"},["Angemeldet als"]),
+    el("div",{class:"header-name"},[me.emoji+" "+me.name])
+  ]));
+  const logoutBtn = el("button",{class:"logout-btn"},["Abmelden"]);
+  logoutBtn.addEventListener("click",()=>{ loggedIn=null; unsubscribers.forEach(u=>u()); renderLogin(); });
+  header.appendChild(logoutBtn);
+
+  // Tab bar
+  const tabBar = document.getElementById("tab-bar");
+  tabBar.innerHTML="";
+  TABS.forEach(t=>{
+    const btn = el("button",{class:"tab-btn"},[ t.icon+" "+t.label ]);
+    btn.style.color = currentTab===t.id ? me.color : "#aaa";
+    btn.style.borderBottomColor = currentTab===t.id ? me.color : "transparent";
+    btn.style.fontWeight = currentTab===t.id ? "700" : "400";
+    btn.addEventListener("click",()=>{ currentTab=t.id; renderApp(); });
+    tabBar.appendChild(btn);
+  });
+
+  // Bottom nav
+  const nav = document.getElementById("bottom-nav");
+  nav.innerHTML="";
+  TABS.forEach(t=>{
+    const btn = el("button",{class:"nav-btn"},[ el("span",{class:"nav-icon"},[t.icon]), t.label ]);
+    btn.style.color = currentTab===t.id ? me.color : "#c0c4d0";
+    btn.addEventListener("click",()=>{ currentTab=t.id; renderApp(); });
+    nav.appendChild(btn);
+  });
+
+  renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  if(!loggedIn) return;
+  const content = document.getElementById("tab-content");
+  content.innerHTML="";
+  if(currentTab==="calendar") renderCalendar(content);
+  else if(currentTab==="todo") renderTodo(content);
+  else if(currentTab==="shopping") renderShopping(content);
+  else if(currentTab==="chores") renderChores(content);
+  else if(currentTab==="pinboard") renderPinboard(content);
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+function renderCalendar(content) {
+  const weekDates = Array.from({length:7},(_,i)=>{ const d=new Date(TODAY); const day=d.getDay(); const diff=day===0?-6:1-day; d.setDate(d.getDate()+diff+weekOffset*7+i); return d; });
+  const me = loggedIn;
+
+  const hdr = el("div",{style:{background:"#fff",padding:"14px 16px 12px",borderBottom:"1px solid #eef0f6"}});
+  const nav = el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}});
+  const prev = el("button",{style:{background:"none",border:"1.5px solid #e8eaf0",borderRadius:10,width:34,height:34,fontSize:18,color:"#888"}},["‹"]);
+  const next = el("button",{style:{background:"none",border:"1.5px solid #e8eaf0",borderRadius:10,width:34,height:34,fontSize:18,color:"#888"}},["›"]);
+  prev.addEventListener("click",()=>{ weekOffset--; selectedDay=null; renderCurrentTab(); });
+  next.addEventListener("click",()=>{ weekOffset++; selectedDay=null; renderCurrentTab(); });
+  const label = weekOffset===0?"Diese Woche":weekOffset===1?"Nächste Woche":weekOffset===-1?"Letzte Woche":"Woche "+(weekOffset>0?"+":"")+weekOffset;
+  nav.append(prev, el("span",{style:{fontSize:14,color:"#666",fontStyle:"italic"}},[label]), next);
+  hdr.appendChild(nav);
+
+  const grid = el("div",{class:"week-grid"});
+  weekDates.forEach((d,i)=>{
+    const df=fmt(d), hasEvt=events.some(e=>e.date===df);
+    const isToday=df===todayStr, isSel=selectedDay&&fmt(selectedDay)===df;
+    const btn = el("button",{class:"day-btn",style:{
+      background:isSel?me.color:isToday?me.color+"22":"transparent",
+      color:isSel?"#fff":isToday?me.color:"#555"
+    }});
+    btn.appendChild(el("span",{style:{fontSize:9,opacity:.6}},[DAYS[d.getDay()]]));
+    btn.appendChild(el("span",{style:{fontSize:16,fontWeight:isToday?"700":"400"}},[String(d.getDate())]));
+    if(hasEvt) btn.appendChild(el("div",{style:{width:5,height:5,borderRadius:"50%",background:isSel?"#fff":me.color}}));
+    btn.addEventListener("click",()=>{ selectedDay=isSel?null:d; renderCurrentTab(); });
+    grid.appendChild(btn);
+  });
+  hdr.appendChild(grid);
+  content.appendChild(hdr);
+
+  const area = el("div",{style:{padding:16}});
+  if(selectedDay) {
+    const df=fmt(selectedDay), dayEvts=events.filter(e=>e.date===df).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+    const row = el("div",{class:"section-head"});
+    row.appendChild(el("div",{class:"section-title"},[DAYS[selectedDay.getDay()]+", "+selectedDay.getDate()+". "+MONTHS[selectedDay.getMonth()]]));
+    const addBtn = el("button",{class:"pill-btn",style:{background:me.color}},["+ Termin"]);
+    addBtn.addEventListener("click",()=>openModal("event",df));
+    row.appendChild(addBtn);
+    area.appendChild(row);
+    if(!dayEvts.length) area.appendChild(el("div",{class:"empty-state"},["Keine Termine"]));
+    dayEvts.forEach(ev=>area.appendChild(makeEventCard(ev)));
+  } else {
+    const row = el("div",{class:"section-head"});
+    row.appendChild(el("div",{class:"section-title"},["Alle Termine"]));
+    const addBtn = el("button",{class:"pill-btn",style:{background:me.color}},["+ Termin"]);
+    addBtn.addEventListener("click",()=>openModal("event",todayStr));
+    row.appendChild(addBtn);
+    area.appendChild(row);
+    const sorted=[...events].sort((a,b)=>a.date.localeCompare(b.date));
+    if(!sorted.length) area.appendChild(el("div",{class:"empty-state"},["Noch keine Termine – tippe + um zu starten"]));
+    sorted.forEach(ev=>area.appendChild(makeEventCard(ev)));
+  }
+  content.appendChild(area);
+}
+
+function makeEventCard(ev) {
+  const m=getMember(ev.memberId,familyData.members), c=getCat(ev.category);
+  const card=el("div",{class:"card event-card",style:{borderLeftColor:c.color}});
+  card.appendChild(el("div",{style:{fontSize:22,paddingTop:2}},[c.icon]));
+  const info=el("div",{style:{flex:1}});
+  info.appendChild(el("div",{style:{fontWeight:600,color:"#222",fontSize:15}},[ev.title]));
+  info.appendChild(el("div",{style:{color:"#aaa",fontSize:11,marginTop:2}},[ fmtD(ev.date)+(ev.time?" · "+ev.time:"")+" · "+m.emoji+" "+m.name ]));
+  const reacts=el("div",{style:{display:"flex",gap:5,marginTop:7}});
+  ["👍","❤️","😮","😂"].forEach(emoji=>{
+    const myR=(ev.reactions||{})[loggedIn.id];
+    const count=Object.values(ev.reactions||{}).filter(r=>r===emoji).length;
+    const btn=el("button",{class:"reaction-btn",style:{background:myR===emoji?loggedIn.color+"22":"#f5f7fc",fontWeight:myR===emoji?"700":"400"}},[ emoji+(count?" "+count:"") ]);
+    btn.addEventListener("click",async()=>{ const r={...(ev.reactions||{}),[loggedIn.id]:myR===emoji?null:emoji}; await updFS("events",ev.id,{reactions:r}); });
+    reacts.appendChild(btn);
+  });
+  info.appendChild(reacts); card.appendChild(info);
+  if(ev.memberId===loggedIn.id||loggedIn.isAdmin) {
+    const del=el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:20,padding:"0 0 0 8px"}},"×");
+    del.addEventListener("click",async()=>{ await delFS("events",ev.id); toast("Termin gelöscht","#e07b8a"); });
+    card.appendChild(del);
+  }
+  return card;
+}
+
+// ── TODO ──────────────────────────────────────────────────────────────────────
+function renderTodo(content) {
+  const me=loggedIn;
+  const area=el("div",{style:{padding:16}});
+  const tabs=el("div",{style:{display:"flex",background:"#fff",borderRadius:16,padding:4,marginBottom:14,gap:4,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}});
+  [{id:"general",label:"🌍 Allgemein"},{id:"private",label:"🔒 Privat"}].forEach(t=>{
+    const btn=el("button",{style:{flex:1,padding:"10px 6px",border:"none",borderRadius:12,background:todoTab===t.id?me.color:"transparent",color:todoTab===t.id?"#fff":"#aaa",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:todoTab===t.id?"700":"400",transition:"all .2s"}},[ t.label ]);
+    btn.addEventListener("click",()=>{ todoTab=t.id; renderCurrentTab(); });
+    tabs.appendChild(btn);
+  });
+  area.appendChild(tabs);
+
+  const filtered=todos.filter(t=>todoTab==="general"?t.type==="general":t.type==="private"&&t.memberId===me.id);
+  PRIORITIES.forEach(prio=>{
+    const items=filtered.filter(t=>t.priority===prio.id);
+    if(!items.length) return;
+    area.appendChild(el("div",{style:{fontSize:11,color:prio.color,fontWeight:700,marginBottom:8,letterSpacing:"0.5px",textTransform:"uppercase"}},[ prio.icon+" "+prio.label ]));
+    items.forEach(todo=>{
+      const tm=getMember(todo.memberId,familyData.members);
+      const as=todo.assignedTo?getMember(todo.assignedTo,familyData.members):null;
+      const overdue=todo.due&&todo.due<todayStr&&!todo.done;
+      const card=el("div",{class:"card todo-card",style:{opacity:todo.done?.55:1}});
+      const chk=el("button",{class:"check-btn",style:{width:26,height:26,borderColor:todo.done?tm.color:"#ddd",background:todo.done?tm.color:"transparent",marginTop:1}},[todo.done?"✓":""]);
+      chk.addEventListener("click",async()=>await updFS("todos",todo.id,{done:!todo.done}));
+      card.appendChild(chk);
+      const info=el("div",{style:{flex:1}});
+      info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:todo.done?"line-through":"none",fontWeight:500}},[todo.text]));
+      const meta=el("div",{style:{display:"flex",gap:6,marginTop:4,flexWrap:"wrap",alignItems:"center"}});
+      meta.appendChild(el("span",{style:{fontSize:11,color:"#bbb"}},[tm.emoji+" "+tm.name]));
+      if(as) meta.appendChild(el("span",{style:{fontSize:11,color:as.color}},["→ "+as.emoji+" "+as.name]));
+      if(todo.due) meta.appendChild(el("span",{style:{fontSize:11,color:overdue?"#e07b8a":"#bbb"}},["📅 "+fmtD(todo.due)+(overdue?" ⚠️":"")]));
+      info.appendChild(meta); card.appendChild(info);
+      if(todo.memberId===loggedIn.id||loggedIn.isAdmin||todo.type==="general") {
+        const del=el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:20,padding:0}},["×"]);
+        del.addEventListener("click",async()=>{ await delFS("todos",todo.id); toast("Gelöscht","#e07b8a"); });
+        card.appendChild(del);
+      }
+      area.appendChild(card);
+    });
+  });
+  if(!filtered.length) area.appendChild(el("div",{class:"empty-state"},[todoTab==="private"?"Keine privaten Aufgaben":"Keine Aufgaben — tippe + um zu starten"]));
+  const addBtn=el("button",{class:"full-btn",style:{background:me.color,marginTop:8}},["+ Aufgabe hinzufügen"]);
+  addBtn.addEventListener("click",()=>openModal("todo"));
+  area.appendChild(addBtn);
+  content.appendChild(area);
+}
+
+// ── SHOPPING ──────────────────────────────────────────────────────────────────
+function renderShopping(content) {
+  const me=loggedIn;
+  const area=el("div",{style:{padding:16}});
+  const row=el("div",{class:"section-head"});
+  row.appendChild(el("div",{},[
+    el("div",{class:"section-title"},["🛒 Einkaufsliste"]),
+    el("div",{style:{fontSize:11,color:"#bbb",marginTop:2}},[shopping.filter(s=>!s.done).length+" offen"])
+  ]));
+  const clr=el("button",{class:"pill-btn",style:{background:"#e07b8a"}},["Erledigt löschen"]);
+  clr.addEventListener("click",async()=>{ for(const s of shopping.filter(s=>s.done)) await delFS("shopping",s.id); });
+  row.appendChild(clr); area.appendChild(row);
+  shopping.filter(s=>!s.done).forEach(item=>area.appendChild(makeShopCard(item)));
+  if(shopping.filter(s=>s.done).length){ area.appendChild(el("div",{style:{fontSize:11,color:"#ccc",margin:"14px 0 8px",textAlign:"center"}},["— Erledigt —"])); shopping.filter(s=>s.done).forEach(item=>area.appendChild(makeShopCard(item))); }
+  if(!shopping.length) area.appendChild(el("div",{class:"empty-state"},["Liste ist leer"]));
+  const addBtn=el("button",{class:"full-btn",style:{background:me.color,marginTop:12}},["+ Artikel hinzufügen"]);
+  addBtn.addEventListener("click",()=>openModal("shopping"));
+  area.appendChild(addBtn); content.appendChild(area);
+}
+
+function makeShopCard(item) {
+  const m=getMember(item.memberId,familyData.members);
+  const card=el("div",{class:"card shop-card",style:{opacity:item.done?.5:1}});
+  const chk=el("button",{class:"check-btn",style:{width:26,height:26,borderColor:item.done?"#4cbb8a":"#ddd",background:item.done?"#4cbb8a":"transparent"}},[item.done?"✓":""]);
+  chk.addEventListener("click",async()=>await updFS("shopping",item.id,{done:!item.done}));
+  card.appendChild(chk);
+  const info=el("div",{style:{flex:1}});
+  info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:item.done?"line-through":"none",fontWeight:500}},[item.text]));
+  info.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},[m.emoji+" "+m.name+" · "+item.qty||1]));
+  card.appendChild(info);
+  const del=el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:20}},["×"]);
+  del.addEventListener("click",async()=>await delFS("shopping",item.id));
+  card.appendChild(del);
+  return card;
+}
+
+// ── CHORES ────────────────────────────────────────────────────────────────────
+function renderChores(content) {
+  const me=loggedIn;
+  const area=el("div",{style:{padding:16}});
+  const row=el("div",{class:"section-head"});
+  row.appendChild(el("div",{class:"section-title"},["🏠 Haushaltsplan"]));
+  const addBtn=el("button",{class:"pill-btn",style:{background:me.color}},["+ Aufgabe"]);
+  addBtn.addEventListener("click",()=>openModal("chore"));
+  row.appendChild(addBtn); area.appendChild(row);
+  familyData.members.forEach(m=>{
+    const myC=chores.filter(c=>c.assignedTo===m.id);
+    if(!myC.length) return;
+    const sec=el("div",{style:{marginBottom:18}});
+    const hdr=el("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10}});
+    hdr.append(el("span",{style:{fontSize:22}},[m.emoji]),el("span",{style:{fontWeight:700,color:m.color,fontSize:15}},[m.name]),el("span",{style:{fontSize:11,color:"#bbb"}},[myC.filter(c=>c.done).length+"/"+myC.length]));
+    sec.appendChild(hdr);
+    myC.forEach(ch=>{
+      const card=el("div",{class:"card",style:{display:"flex",alignItems:"center",gap:12,opacity:ch.done?.6:1,marginBottom:6}});
+      const chk=el("button",{class:"check-btn",style:{width:26,height:26,borderColor:ch.done?m.color:"#ddd",background:ch.done?m.color:"transparent"}},[ch.done?"✓":""]);
+      chk.addEventListener("click",async()=>await updFS("chores",ch.id,{done:!ch.done}));
+      card.appendChild(chk);
+      const info=el("div",{style:{flex:1}});
+      info.appendChild(el("div",{style:{fontSize:14,color:"#222",textDecoration:ch.done?"line-through":"none",fontWeight:500}},[ch.task]));
+      info.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},[["So","Mo","Di","Mi","Do","Fr","Sa"][ch.weekDay]||""]));
+      card.appendChild(info);
+      sec.appendChild(card);
+    });
+    area.appendChild(sec);
+  });
+  if(!chores.length) area.appendChild(el("div",{class:"empty-state"},["Noch keine Aufgaben"]));
+  content.appendChild(area);
+}
+
+// ── PINBOARD ──────────────────────────────────────────────────────────────────
+function renderPinboard(content) {
+  const me=loggedIn;
+  const area=el("div",{style:{padding:16}});
+  const row=el("div",{class:"section-head"});
+  row.appendChild(el("div",{class:"section-title"},["📌 Pinnwand"]));
+  const addBtn=el("button",{class:"pill-btn",style:{background:me.color}},["+ Notiz"]);
+  addBtn.addEventListener("click",()=>openModal("pinboard"));
+  row.appendChild(addBtn); area.appendChild(row);
+  [...pinboard].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)).forEach(p=>{
+    const m=getMember(p.memberId,familyData.members);
+    const card=el("div",{class:"card",style:{background:p.pinned?"#fffbec":"#fff",border:p.pinned?"2px solid #f5a62355":"1px solid #f0f0f0",marginBottom:10}});
+    card.appendChild(el("div",{style:{fontSize:14,color:"#333",lineHeight:1.6,marginBottom:10}},[p.text]));
+    const footer=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}});
+    footer.appendChild(el("div",{style:{fontSize:11,color:"#bbb"}},[m.emoji+" "+m.name+(p.timeStr?" · "+p.timeStr:"")]));
+    const acts=el("div",{style:{display:"flex",gap:8}});
+    const pinBtn=el("button",{style:{background:"none",border:"none",fontSize:18,color:p.pinned?"#f5a623":"#ddd"}},["📌"]);
+    pinBtn.addEventListener("click",async()=>await updFS("pinboard",p.id,{pinned:!p.pinned}));
+    acts.appendChild(pinBtn);
+    if(p.memberId===loggedIn.id||loggedIn.isAdmin) {
+      const del=el("button",{style:{background:"none",border:"none",color:"#ddd",fontSize:20}},["×"]);
+      del.addEventListener("click",async()=>await delFS("pinboard",p.id));
+      acts.appendChild(del);
+    }
+    footer.appendChild(acts); card.appendChild(footer); area.appendChild(card);
+  });
+  if(!pinboard.length) area.appendChild(el("div",{class:"empty-state"},["Noch keine Notizen"]));
+  content.appendChild(area);
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(type, prefillDate) {
+  const overlay=el("div",{class:"modal-overlay"});
+  const box=el("div",{class:"modal-box"});
+  overlay.addEventListener("click",e=>{ if(e.target===overlay) overlay.remove(); });
+  const me=loggedIn;
+
+  if(type==="event") {
+    box.appendChild(el("div",{class:"modal-title"},["📅 Neuer Termin"]));
+    const titleInp=mInput("Titel");
+    const dateInp=mInput("","date"); dateInp.value=prefillDate||todayStr;
+    const timeInp=mInput("","time"); timeInp.value="08:00";
+    const dateRow=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}});
+    dateRow.append(dateInp,timeInp);
+    box.append(titleInp,dateRow);
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:8,marginTop:4,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Kategorie"]));
+    let selCat="other";
+    const chips=el("div",{style:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}});
+    CATEGORIES.forEach(c=>{
+      const chip=el("button",{class:"chip",style:{borderColor:selCat===c.id?c.color:"#eee",background:selCat===c.id?c.color+"18":"#fff",color:selCat===c.id?c.color:"#aaa"}},[c.icon+" "+c.label]);
+      chip.addEventListener("click",()=>{ selCat=c.id; chips.querySelectorAll("button").forEach((b,i)=>{ const cc=CATEGORIES[i]; b.style.borderColor=cc.id===selCat?cc.color:"#eee"; b.style.background=cc.id===selCat?cc.color+"18":"#fff"; b.style.color=cc.id===selCat?cc.color:"#aaa"; }); });
+      chips.appendChild(chip);
+    });
+    box.appendChild(chips);
+    const save=el("button",{class:"full-btn",style:{background:me.color}},["Speichern"]);
+    save.addEventListener("click",async()=>{ if(!titleInp.value.trim()) return; await addFS("events",{title:titleInp.value,date:dateInp.value,time:timeInp.value,category:selCat,memberId:me.id,reactions:{}}); toast("Termin hinzugefügt ✅"); overlay.remove(); });
+    box.appendChild(save);
+  }
+
+  else if(type==="todo") {
+    box.appendChild(el("div",{class:"modal-title"},[todoTab==="general"?"🌍 Allgemeine Aufgabe":"🔒 Private Aufgabe"]));
+    const textInp=mInput("Was muss erledigt werden?");
+    box.appendChild(textInp);
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:8,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Priorität"]));
+    let selPrio="medium";
+    const prioRow=el("div",{style:{display:"flex",gap:8,marginBottom:14}});
+    PRIORITIES.forEach(p=>{
+      const btn=el("button",{class:"priority-btn",style:{borderColor:p.id===selPrio?p.color:"#eee",background:p.id===selPrio?p.color+"18":"#fff",color:p.id===selPrio?p.color:"#aaa"}},[p.icon+" "+p.label]);
+      btn.addEventListener("click",()=>{ selPrio=p.id; prioRow.querySelectorAll("button").forEach((b,i)=>{ const pp=PRIORITIES[i]; b.style.borderColor=pp.id===selPrio?pp.color:"#eee"; b.style.background=pp.id===selPrio?pp.color+"18":"#fff"; b.style.color=pp.id===selPrio?pp.color:"#aaa"; }); });
+      prioRow.appendChild(btn);
+    });
+    box.appendChild(prioRow);
+    const dueInp=mInput("","date");
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:6,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Fälligkeitsdatum (optional)"]));
+    box.appendChild(dueInp);
+    let selAssign="";
+    if(todoTab==="general") {
+      box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:8,marginTop:4,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Zuweisen an (optional)"]));
+      const aRow=el("div",{style:{display:"flex",gap:6,marginBottom:14,flexWrap:"wrap"}});
+      familyData.members.forEach(m=>{
+        const btn=el("button",{class:"assign-btn",style:{borderColor:selAssign===m.id?m.color:"#eee",background:selAssign===m.id?m.color+"18":"#fff",color:selAssign===m.id?m.color:"#aaa"}},[m.emoji+" "+m.name]);
+        btn.addEventListener("click",()=>{ selAssign=selAssign===m.id?"":m.id; aRow.querySelectorAll("button").forEach((b,i)=>{ const mm=familyData.members[i]; b.style.borderColor=mm.id===selAssign?mm.color:"#eee"; b.style.background=mm.id===selAssign?mm.color+"18":"#fff"; b.style.color=mm.id===selAssign?mm.color:"#aaa"; }); });
+        aRow.appendChild(btn);
+      });
+      box.appendChild(aRow);
+    }
+    const save=el("button",{class:"full-btn",style:{background:me.color}},["Hinzufügen"]);
+    save.addEventListener("click",async()=>{ if(!textInp.value.trim()) return; await addFS("todos",{text:textInp.value,done:false,type:todoTab,memberId:me.id,priority:selPrio,due:dueInp.value,assignedTo:selAssign||null}); toast("Aufgabe hinzugefügt ✅"); overlay.remove(); });
+    box.appendChild(save);
+  }
+
+  else if(type==="shopping") {
+    box.appendChild(el("div",{class:"modal-title"},["🛒 Artikel hinzufügen"]));
+    const textInp=mInput("Was brauchen wir?");
+    const qtyInp=mInput("Menge (z.B. 2, 500g)"); qtyInp.value="1";
+    box.append(textInp,qtyInp);
+    const save=el("button",{class:"full-btn",style:{background:me.color}},["Hinzufügen"]);
+    save.addEventListener("click",async()=>{ if(!textInp.value.trim()) return; await addFS("shopping",{text:textInp.value,qty:qtyInp.value,done:false,memberId:me.id}); toast("Hinzugefügt 🛒"); overlay.remove(); });
+    box.appendChild(save);
+  }
+
+  else if(type==="chore") {
+    box.appendChild(el("div",{class:"modal-title"},["🏠 Haushaltsaufgabe"]));
+    const taskInp=mInput("z.B. Staubsaugen, Abwasch...");
+    box.appendChild(taskInp);
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:8,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Zuweisen an"]));
+    let selM="";
+    const mRow=el("div",{style:{display:"flex",gap:6,marginBottom:14,flexWrap:"wrap"}});
+    familyData.members.forEach(m=>{
+      const btn=el("button",{class:"assign-btn",style:{borderColor:selM===m.id?m.color:"#eee",background:selM===m.id?m.color+"18":"#fff",color:selM===m.id?m.color:"#aaa"}},[m.emoji+" "+m.name]);
+      btn.addEventListener("click",()=>{ selM=m.id; mRow.querySelectorAll("button").forEach((b,i)=>{ const mm=familyData.members[i]; b.style.borderColor=mm.id===selM?mm.color:"#eee"; b.style.background=mm.id===selM?mm.color+"18":"#fff"; b.style.color=mm.id===selM?mm.color:"#aaa"; }); });
+      mRow.appendChild(btn);
+    });
+    box.appendChild(mRow);
+    box.appendChild(el("div",{style:{fontSize:12,color:"#888",marginBottom:8,fontWeight:600,letterSpacing:"0.5px",textTransform:"uppercase"}},["Wochentag"]));
+    let selDay=1;
+    const dRow=el("div",{style:{display:"flex",gap:4,marginBottom:16}});
+    ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach((d,i)=>{
+      const btn=el("button",{style:{flex:1,padding:"9px 2px",border:"2px solid "+(selDay===i+1?me.color:"#eee"),borderRadius:10,background:selDay===i+1?me.color+"18":"#fff",color:selDay===i+1?me.color:"#aaa",fontFamily:"'DM Sans',sans-serif",fontSize:11,cursor:"pointer",transition:"all .15s"}},[d]);
+      btn.addEventListener("click",()=>{ selDay=i+1; dRow.querySelectorAll("button").forEach((b,j)=>{ b.style.borderColor=selDay===j+1?me.color:"#eee"; b.style.background=selDay===j+1?me.color+"18":"#fff"; b.style.color=selDay===j+1?me.color:"#aaa"; }); });
+      dRow.appendChild(btn);
+    });
+    box.appendChild(dRow);
+    const save=el("button",{class:"full-btn",style:{background:me.color}},["Hinzufügen"]);
+    save.addEventListener("click",async()=>{ if(!taskInp.value.trim()||!selM) return; await addFS("chores",{task:taskInp.value,assignedTo:selM,weekDay:selDay,done:false}); toast("Aufgabe hinzugefügt 🏠"); overlay.remove(); });
+    box.appendChild(save);
+  }
+
+  else if(type==="pinboard") {
+    box.appendChild(el("div",{class:"modal-title"},["📌 Neue Notiz"]));
+    const ta=document.createElement("textarea");
+    ta.placeholder="Schreib etwas für die Familie...";
+    ta.className="input-field"; ta.style.height="100px"; ta.style.resize="none"; ta.style.width="100%";
+    box.appendChild(ta);
+    const save=el("button",{class:"full-btn",style:{background:me.color}},["Posten"]);
+    save.addEventListener("click",async()=>{ if(!ta.value.trim()) return; const now=new Date(); const timeStr=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0"); await addFS("pinboard",{text:ta.value,memberId:me.id,timeStr,pinned:false}); toast("Notiz gepostet 📌"); overlay.remove(); });
+    box.appendChild(save);
+  }
+
+  const cancel=el("button",{class:"cancel-btn"},["Abbrechen"]);
+  cancel.addEventListener("click",()=>overlay.remove());
+  box.appendChild(cancel);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function mInput(placeholder, type="text") {
+  const inp=document.createElement("input");
+  inp.type=type; inp.placeholder=placeholder; inp.className="input-field";
+  return inp;
+}
+
+// ── DOM HELPER ────────────────────────────────────────────────────────────────
+function el(tag, attrs={}, children=[]) {
+  const e=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==="style"&&typeof v==="object") Object.assign(e.style,v);
+    else if(k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(),v);
+    else e.setAttribute(k,v);
+  });
+  children.forEach(c=>{ if(c!=null) e.appendChild(typeof c==="string"?document.createTextNode(c):c); });
+  return e;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  // Wire up welcome screen buttons
+  document.getElementById("btn-create").addEventListener("click", renderSetup);
+  document.getElementById("btn-join").addEventListener("click", renderJoin);
+
+  const saved = getSavedFamily();
+  if(saved) {
+    try {
+      const snap = await getDoc(doc(db,"families",saved));
+      if(snap.exists()) { familyId=saved; familyData=snap.data(); renderLogin(); return; }
+    } catch(e){}
+    clearSavedFamily();
+  }
+  renderWelcome();
+}
+
+init();
+</script>
+
+<!-- HTML STRUCTURE -->
+<div id="welcome-screen">
+  <div class="welcome-logo">🏡</div>
+  <h1 class="welcome-title">Familien-App</h1>
+  <p class="welcome-sub">Gemeinsam organisiert</p>
+  <div class="welcome-btns">
+    <button class="btn-primary" id="btn-create" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+      🏠 Familie erfassen
+    </button>
+    <button class="btn-outline" id="btn-join">
+      🔑 Familie beitreten
+    </button>
+  </div>
+</div>
+
+<div id="setup-screen" class="hidden"></div>
+<div id="join-screen" class="hidden"></div>
+<div id="code-screen" class="hidden"></div>
+<div id="login-screen" class="hidden"></div>
+<div id="pin-screen" class="hidden"></div>
+
+<div id="main-app" class="hidden">
+  <div id="app-header"></div>
+  <div id="tab-bar"></div>
+  <div id="tab-content"></div>
+  <div id="bottom-nav"></div>
+</div>
+
+<script type="module">
+// Wire up welcome screen buttons properly after module loads
+</script>
+
+</body>
+</html>
