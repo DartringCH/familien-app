@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Familien-App</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Georgia', serif; background: #eef1f8; max-width: 430px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+button { font-family: 'Georgia', serif; cursor: pointer; }
+input, textarea, select { font-family: 'Georgia', serif; }
+
+/* WELCOME */
+#welcome-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+.welcome-logo { font-size: 64px; margin-bottom: 16px; }
+.welcome-title { font-size: 32px; color: #fff; font-weight: 700; text-align: center; }
+.welcome-sub { color: rgba(255,255,255,0.5); font-size: 14px; margin-top: 8px; text-align: center; }
+.welcome-btns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px; margin-top: 48px; }
+.btn-primary { padding: 18px; border: none; border-radius: 16px; font-size: 16px; font-weight: 600; color: #fff; cursor: pointer; background: linear-gradient(135deg,#667eea,#764ba2); }
+.btn-outline { padding: 17px; border: 2px solid rgba(255,255,255,0.25); border-radius: 16px; font-size: 16px; font-weight: 500; color: #fff; background: rgba(255,255,255,0.05); cursor: pointer; }
+
+/* SETUP */
+#setup-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); padding: 40px 24px 32px; display: none; flex-direction: column; }
+.back-btn { color: rgba(255,255,255,0.5); font-size: 14px; background: none; border: none; padding: 0; margin-bottom: 32px; }
+.setup-title { color: #fff; font-size: 26px; margin-bottom: 6px; }
+.setup-sub { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 32px; }
+.form-label { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+.form-input { width: 100%; padding: 14px 16px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 15px; color: #fff; background: rgba(255,255,255,0.08); outline: none; margin-bottom: 20px; }
+.form-input::placeholder { color: rgba(255,255,255,0.3); }
+.member-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+.member-name-input { flex: 1; padding: 12px 14px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 14px; color: #fff; background: rgba(255,255,255,0.08); outline: none; }
+.member-name-input::placeholder { color: rgba(255,255,255,0.3); }
+.member-pin-input { width: 90px; padding: 12px 10px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 14px; color: #fff; background: rgba(255,255,255,0.08); outline: none; text-align: center; letter-spacing: 3px; }
+.member-pin-input::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 0; }
+.remove-member-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(255,80,80,0.2); color: #ff6b6b; font-size: 18px; flex-shrink: 0; }
+.add-member-btn { width: 100%; padding: 12px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 24px; }
+
+/* JOIN */
+#join-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); padding: 40px 24px 32px; display: none; flex-direction: column; }
+.code-input { width: 100%; padding: 20px; border: 2px solid rgba(255,255,255,0.2); border-radius: 16px; font-size: 28px; color: #fff; background: rgba(255,255,255,0.08); outline: none; text-align: center; letter-spacing: 8px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; }
+.code-input::placeholder { font-size: 16px; letter-spacing: 2px; font-weight: 400; color: rgba(255,255,255,0.3); }
+.divider { text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; margin: 24px 0 16px; }
+.forgot-label { color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 12px; text-align: center; }
+
+/* CODE SCREEN */
+#code-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+.code-box { background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 32px; width: 100%; max-width: 320px; text-align: center; }
+.code-box-label { color: rgba(255,255,255,0.6); font-size: 13px; }
+.family-code { font-size: 48px; color: #fff; letter-spacing: 8px; font-weight: 700; margin: 16px 0; }
+.code-hint { color: rgba(255,255,255,0.5); font-size: 13px; line-height: 1.6; }
+
+/* LOGIN */
+#login-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.family-title { color: #fff; font-size: 28px; text-align: center; margin-bottom: 6px; }
+.family-sub { color: rgba(255,255,255,0.4); font-size: 13px; text-align: center; margin-bottom: 36px; }
+.member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; }
+.member-card { background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; border: none; }
+.member-card-emoji { font-size: 34px; }
+.member-card-name { color: #fff; font-size: 15px; font-weight: 500; }
+.member-card-bar { width: 24px; height: 3px; border-radius: 2px; }
+.change-family-btn { color: rgba(255,255,255,0.3); font-size: 12px; background: none; border: none; margin-top: 24px; }
+.delete-family-btn { color: rgba(255,80,80,0.4); font-size: 11px; background: none; border: none; margin-top: 8px; }
+
+/* PIN */
+#pin-screen { min-height: 100vh; background: linear-gradient(160deg,#0f0c29,#302b63,#24243e); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.pin-box { width: 100%; max-width: 300px; }
+.pin-avatar { font-size: 44px; text-align: center; margin-bottom: 8px; }
+.pin-name { color: #fff; font-size: 20px; text-align: center; margin-bottom: 4px; }
+.pin-hint { color: rgba(255,255,255,0.4); font-size: 12px; text-align: center; margin-bottom: 24px; }
+.pin-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 28px; }
+.pin-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all .15s; }
+.pin-dot.filled { transform: scale(1.2); }
+.pin-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.pin-key { padding: 16px 0; border: none; border-radius: 14px; background: rgba(255,255,255,0.08); color: #fff; font-size: 20px; font-weight: 500; }
+.pin-key.empty { background: transparent; cursor: default; }
+.pin-back { width: 100%; padding: 12px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 12px; }
+
+/* MAIN APP */
+#main-app { display: none; }
+#app-header { padding: 18px 20px 14px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+.header-sub { font-size: 11px; opacity: .6; letter-spacing: 1.5px; text-transform: uppercase; }
+.header-name { font-size: 20px; font-weight: 600; }
+.logout-btn { background: rgba(255,255,255,0.18); border: none; color: #fff; border-radius: 20px; padding: 7px 14px; font-size: 12px; }
+#tab-bar { display: flex; background: #fff; border-bottom: 1px solid #e4e8f0; overflow-x: auto; position: sticky; top: 0; z-index: 10; }
+#tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn { flex: 0 0 auto; padding: 12px 14px; border: none; background: transparent; font-size: 12px; border-bottom: 3px solid transparent; white-space: nowrap; font-family: Georgia,serif; }
+#bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: #fff; border-top: 1px solid #e8eaf0; display: flex; z-index: 20; box-shadow: 0 -2px 16px rgba(0,0,0,0.08); }
+.nav-btn { flex: 1; padding: 10px 4px 8px; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; font-family: Georgia,serif; }
+.nav-icon { font-size: 20px; }
+#tab-content { padding: 16px; }
+
+/* CARDS */
+.card { background: #fff; border-radius: 16px; padding: 13px 15px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.event-card { border-left: 4px solid #888; display: flex; align-items: flex-start; gap: 12px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.section-title { font-size: 18px; color: #222; font-weight: 600; }
+.pill-btn { color: #fff; border: none; border-radius: 20px; padding: 7px 15px; font-size: 12px; font-weight: 600; font-family: Georgia,serif; }
+.empty-state { text-align: center; color: #ccc; padding: 36px 0; font-size: 14px; }
+.week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 4px; }
+.day-btn { border: none; border-radius: 12px; padding: 7px 3px; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; background: transparent; color: #555; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 100; padding: 0 0 20px; }
+.modal-box { background: #fff; border-radius: 28px 28px 18px 18px; padding: 28px 22px 24px; width: 100%; max-width: 430px; }
+.modal-title { font-size: 20px; color: #222; margin-bottom: 20px; font-weight: 600; }
+.field-input { width: 100%; padding: 13px 15px; border: 1.5px solid #e8eaf0; border-radius: 12px; font-size: 15px; font-family: Georgia,serif; margin-bottom: 12px; outline: none; display: block; }
+.full-btn { width: 100%; padding: 14px; color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; font-family: Georgia,serif; }
+.cancel-btn { width: 100%; padding: 12px; border: none; background: transparent; color: #bbb; font-size: 13px; margin-top: 6px; font-family: Georgia,serif; }
+.cat-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.cat-chip { padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 2px solid #eee; background: #fff; color: #aaa; cursor: pointer; font-family: Georgia,serif; }
+.cat-chip.active { }
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* TOAST */
+.toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); color: #fff; padding: 11px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; z-index: 999; white-space: nowrap; }
+
+/* TODO */
+.todo-card { display: flex; align-items: flex-start; gap: 10px; }
+.check-circle { border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; flex-shrink: 0; border: 2px solid #ddd; background: transparent; }
+.prio-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.prio-btn { flex: 1; padding: 10px 4px; border: 2px solid #eee; border-radius: 12px; background: #fff; font-family: Georgia,serif; font-size: 12px; cursor: pointer; text-align: center; }
+.assign-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.assign-btn { flex: 1; padding: 10px 4px; border: 2px solid #eee; border-radius: 12px; background: #fff; font-family: Georgia,serif; font-size: 11px; cursor: pointer; text-align: center; min-width: 60px; }
+
+/* SHOP */
+.shop-card { display: flex; align-items: center; gap: 10px; }
+
+/* CHORE */
+.day-row { display: flex; gap: 4px; margin-bottom: 16px; }
+.day-chip { flex: 1; padding: 8px 2px; border: 2px solid #eee; border-radius: 10px; background: #fff; font-family: Georgia,serif; font-size: 10px; cursor: pointer; text-align: center; }
+
+/* PIN card */
+.pin-card { border: 1px solid #f0f0f0; margin-bottom: 10px; }
+.sub-tab-row { display: flex; background: #fff; border-radius: 16px; padding: 4px; margin-bottom: 14px; gap: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.sub-tab-btn { flex: 1; padding: 10px 6px; border: none; border-radius: 12px; font-family: Georgia,serif; font-size: 13px; cursor: pointer; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc,
+  query, orderBy, serverTimestamp, getDoc, setDoc, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD_ADG0IBl0r35gw5idzUSNN8bnXdllQ3g",
+  authDomain: "familien-app-f158b.firebaseapp.com",
+  projectId: "familien-app-f158b",
+  storageBucket: "familien-app-f158b.firebasestorage.app",
+  messagingSenderId: "488439040235",
+  appId: "1:488439040235:web:bb97dd98734f5dd2d68b3e"
+};
+const EJS_SERVICE  = "service_7xjrjke";
+const EJS_TEMPLATE = "template_rjpf7zn";
+const EJS_KEY      = "5mlL9C4Lb7WKkWaQd";
+
+emailjs.init({ publicKey: EJS_KEY });
+
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const db = getFirestore(firebaseApp);
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const EMOJIS = ["👩","👨","👧","👦","👴","👵","🧑","👶","🐶","🐱"];
+const COLORS = ["#e07b8a","#5b8dee","#f5a623","#4cbb8a","#b07fd6","#e8704a","#3dbdb0","#e84393"];
+const CATS = [
+  {id:"school",label:"Schule",icon:"📚",color:"#6c8ebf"},
+  {id:"doctor",label:"Arzt",icon:"🏥",color:"#e07b8a"},
+  {id:"sport",label:"Sport",icon:"⚽",color:"#4cbb8a"},
+  {id:"family",label:"Familie",icon:"🏡",color:"#f5a623"},
+  {id:"birthday",label:"Geburtstag",icon:"🎂",color:"#b07fd6"},
+  {id:"other",label:"Sonstiges",icon:"📌",color:"#888"},
+];
+const PRIOS = [
+  {id:"high",label:"Hoch",color:"#e07b8a",icon:"🔴"},
+  {id:"medium",label:"Mittel",color:"#f5a623",icon:"🟡"},
+  {id:"low",label:"Niedrig",color:"#4cbb8a",icon:"🟢"},
+];
+const DAYS_SHORT = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MONTHS_FULL = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+function toDateStr(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,"0");
+  var dd = String(d.getDate()).padStart(2,"0");
+  return y+"-"+m+"-"+dd;
+}
+function displayDate(s) {
+  if(!s) return "";
+  var p = s.split("-");
+  return p[2]+"."+p[1]+"."+p[0];
+}
+function getMbr(id) {
+  return (state.familyData.members||[]).find(function(m){return m.id===id;})||{name:"?",emoji:"❓",color:"#888"};
+}
+function getCat(id) {
+  return CATS.find(function(c){return c.id===id;})||CATS[5];
+}
+function generateCode() {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var result = "";
+  for(var i=0;i<6;i++) result += chars[Math.floor(Math.random()*chars.length)];
+  return result;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var state = {
+  familyId: null,
+  familyData: null,
+  loggedIn: null,
+  pinTarget: null,
+  pinInput: "",
+  currentTab: "calendar",
+  weekOffset: 0,
+  selectedDay: null,
+  todoTab: "general",
+  events: [],
+  todos: [],
+  shopping: [],
+  chores: [],
+  pinboard: [],
+  unsubscribers: [],
+  setupMembers: [
+    {name:"",pin:"",emoji:"👩",color:"#e07b8a"},
+    {name:"",pin:"",emoji:"👨",color:"#5b8dee"}
+  ]
+};
+
+var TODAY = new Date();
+var todayStr = toDateStr(TODAY);
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function show(id) {
+  ["welcome-screen","setup-screen","join-screen","code-screen","login-screen","pin-screen","main-app"].forEach(function(s) {
+    var el = document.getElementById(s);
+    if(!el) return;
+    if(s === id) {
+      el.style.display = "flex";
+      el.style.flexDirection = "column";
+    } else {
+      el.style.display = "none";
+    }
+  });
+}
+
+function toast(msg, color) {
+  color = color || "#4cbb8a";
+  var el = document.createElement("div");
+  el.className = "toast";
+  el.style.background = color;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 2800);
+}
+
+function colRef(name) {
+  return collection(db,"families",state.familyId,name);
+}
+
+async function addFS(col, data) {
+  data.createdAt = serverTimestamp();
+  await addDoc(colRef(col), data);
+}
+async function updFS(col, id, data) {
+  await updateDoc(doc(db,"families",state.familyId,col,id), data);
+}
+async function delFS(col, id) {
+  await deleteDoc(doc(db,"families",state.familyId,col,id));
+}
+
+function saveFamily(id) { try { localStorage.setItem("fam_id", id); } catch(e){} }
+function getSavedFamily() { try { return localStorage.getItem("fam_id"); } catch(e){ return null; } }
+function clearSavedFamily() { try { localStorage.removeItem("fam_id"); } catch(e){} }
+
+// ── EMAILJS ───────────────────────────────────────────────────────────────────
+async function sendCode(toEmail, famName, code) {
+  try {
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      to_email: toEmail, name: famName, family_code: code
+    });
+    return true;
+  } catch(e) { console.error("Email error",e); return false; }
+}
+
+// ── FIREBASE LISTENERS ────────────────────────────────────────────────────────
+function startListeners() {
+  state.unsubscribers.forEach(function(u){ u(); });
+  state.unsubscribers = [];
+  var colls = ["events","todos","shopping","chores","pinboard"];
+  colls.forEach(function(name) {
+    var q = query(colRef(name), orderBy("createdAt","desc"));
+    var unsub = onSnapshot(q, function(snap) {
+      state[name] = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      // Re-render only if on main app and no modal open
+      if(document.getElementById("main-app").style.display !== "none" &&
+         !document.querySelector(".modal-overlay")) {
+        renderTab();
+      }
+    });
+    state.unsubscribers.push(unsub);
+  });
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+
+// WELCOME
+function showWelcome() {
+  show("welcome-screen");
+  document.getElementById("btn-create").onclick = showSetup;
+  document.getElementById("btn-join").onclick = showJoin;
+}
+
+// SETUP
+function showSetup() {
+  show("setup-screen");
+  renderSetup();
+}
+
+function renderSetup() {
+  var s = document.getElementById("setup-screen");
+  s.innerHTML = "";
+
+  var back = document.createElement("button");
+  back.className = "back-btn";
+  back.textContent = "← Zurück";
+  back.onclick = showWelcome;
+  s.appendChild(back);
+
+  var h2 = document.createElement("h2");
+  h2.className = "setup-title";
+  h2.textContent = "🏡 Familie erfassen";
+  s.appendChild(h2);
+
+  var sub = document.createElement("p");
+  sub.className = "setup-sub";
+  sub.textContent = "Erstelle deine Familie als Administrator";
+  s.appendChild(sub);
+
+  var lbl1 = document.createElement("label");
+  lbl1.className = "form-label";
+  lbl1.textContent = "Familienname";
+  s.appendChild(lbl1);
+  var famNameInput = document.createElement("input");
+  famNameInput.className = "form-input";
+  famNameInput.placeholder = "z.B. Familie Müller";
+  famNameInput.type = "text";
+  s.appendChild(famNameInput);
+
+  var lbl2 = document.createElement("label");
+  lbl2.className = "form-label";
+  lbl2.textContent = "E-Mail (für Code-Wiederherstellung)";
+  s.appendChild(lbl2);
+  var famEmailInput = document.createElement("input");
+  famEmailInput.className = "form-input";
+  famEmailInput.placeholder = "eure@email.ch";
+  famEmailInput.type = "email";
+  s.appendChild(famEmailInput);
+
+  var lbl3 = document.createElement("label");
+  lbl3.className = "form-label";
+  lbl3.textContent = "Mitglieder + PIN (4 Ziffern)";
+  s.appendChild(lbl3);
+
+  var membersDiv = document.createElement("div");
+  s.appendChild(membersDiv);
+  renderMemberRows(membersDiv);
+
+  var addMemberBtn = document.createElement("button");
+  addMemberBtn.className = "add-member-btn";
+  addMemberBtn.textContent = "+ Mitglied hinzufügen";
+  addMemberBtn.onclick = function() {
+    var idx = state.setupMembers.length;
+    state.setupMembers.push({name:"",pin:"",emoji:EMOJIS[idx%EMOJIS.length],color:COLORS[idx%COLORS.length]});
+    renderMemberRows(membersDiv);
+  };
+  s.appendChild(addMemberBtn);
+
+  var saveBtn = document.createElement("button");
+  saveBtn.className = "btn-primary";
+  saveBtn.style.marginTop = "8px";
+  saveBtn.textContent = "Familie erstellen";
+  saveBtn.onclick = async function() {
+    var name = famNameInput.value.trim();
+    var email = famEmailInput.value.trim();
+    if(!name) { toast("Bitte Familienname eingeben","#e07b8a"); return; }
+    if(!email) { toast("Bitte E-Mail eingeben","#e07b8a"); return; }
+    var valid = state.setupMembers.filter(function(m){ return m.name.trim() && m.pin.length===4; });
+    if(!valid.length) { toast("Mind. 1 Mitglied mit 4-stelliger PIN","#e07b8a"); return; }
+    saveBtn.textContent = "Wird erstellt..."; saveBtn.disabled = true;
+    try {
+      var code = generateCode();
+      var fid = "FAM_"+code;
+      var members = valid.map(function(m,i){ return {id:"m"+i,name:m.name.trim(),pin:m.pin,emoji:m.emoji,color:m.color,isAdmin:i===0}; });
+      await setDoc(doc(db,"families",fid), {name:name,code:code,email:email,members:members,createdAt:serverTimestamp()});
+      state.familyId = fid;
+      state.familyData = {name:name,code:code,email:email,members:members};
+      saveFamily(fid);
+      var sent = await sendCode(email, name, code);
+      if(sent) toast("Code per E-Mail gesendet! 📧");
+      showCodeScreen(name, code);
+    } catch(e) {
+      console.error(e);
+      toast("Fehler beim Erstellen","#e07b8a");
+      saveBtn.textContent = "Familie erstellen"; saveBtn.disabled = false;
+    }
+  };
+  s.appendChild(saveBtn);
+}
+
+function renderMemberRows(container) {
+  container.innerHTML = "";
+  state.setupMembers.forEach(function(m, i) {
+    var row = document.createElement("div");
+    row.className = "member-row";
+
+    var emojiBtn = document.createElement("button");
+    emojiBtn.style.cssText = "font-size:24px;background:rgba(255,255,255,0.1);border:none;border-radius:10px;width:44px;height:44px;cursor:pointer;";
+    emojiBtn.textContent = m.emoji;
+    emojiBtn.onclick = function() {
+      var pick = prompt("Emoji wählen:\n" + EMOJIS.join("  "));
+      if(pick && EMOJIS.indexOf(pick.trim()) >= 0) {
+        state.setupMembers[i].emoji = pick.trim();
+        renderMemberRows(container);
+      }
+    };
+    row.appendChild(emojiBtn);
+
+    var nameInp = document.createElement("input");
+    nameInp.className = "member-name-input";
+    nameInp.placeholder = "Name "+(i+1);
+    nameInp.value = m.name;
+    nameInp.oninput = function(e){ state.setupMembers[i].name = e.target.value; };
+    row.appendChild(nameInp);
+
+    var pinInp = document.createElement("input");
+    pinInp.className = "member-pin-input";
+    pinInp.placeholder = "PIN";
+    pinInp.type = "password";
+    pinInp.maxLength = 4;
+    pinInp.value = m.pin;
+    pinInp.oninput = function(e){ state.setupMembers[i].pin = e.target.value.replace(/\D/g,"").slice(0,4); pinInp.value = state.setupMembers[i].pin; };
+    row.appendChild(pinInp);
+
+    if(state.setupMembers.length > 1) {
+      var remBtn = document.createElement("button");
+      remBtn.className = "remove-member-btn";
+      remBtn.textContent = "×";
+      remBtn.onclick = function() { state.setupMembers.splice(i,1); renderMemberRows(container); };
+      row.appendChild(remBtn);
+    }
+    container.appendChild(row);
+  });
+}
+
+// CODE SCREEN
+function showCodeScreen(name, code) {
+  show("code-screen");
+  var s = document.getElementById("code-screen");
+  s.innerHTML = "";
+  var emoji = document.createElement("div");
+  emoji.style.cssText = "font-size:52px;margin-bottom:16px;";
+  emoji.textContent = "🎉";
+  s.appendChild(emoji);
+  var h2 = document.createElement("h2");
+  h2.style.cssText = "color:#fff;font-size:26px;text-align:center;margin-bottom:24px;";
+  h2.textContent = name + " ist bereit!";
+  s.appendChild(h2);
+  var box = document.createElement("div");
+  box.className = "code-box";
+  box.innerHTML = "<div class='code-box-label'>Euer Familien-Code</div><div class='family-code'>"+code+"</div><div class='code-hint'>Diesen Code mit der Familie teilen. Jedes Mitglied gibt ihn beim ersten Öffnen der App ein.</div>";
+  s.appendChild(box);
+  var btn = document.createElement("button");
+  btn.className = "btn-primary";
+  btn.style.cssText = "margin-top:28px;width:100%;max-width:320px;";
+  btn.textContent = "Weiter zur App →";
+  btn.onclick = showLogin;
+  s.appendChild(btn);
+}
+
+// JOIN SCREEN
+function showJoin() {
+  show("join-screen");
+  var s = document.getElementById("join-screen");
+  s.innerHTML = "";
+
+  var back = document.createElement("button");
+  back.className = "back-btn";
+  back.textContent = "← Zurück";
+  back.onclick = showWelcome;
+  s.appendChild(back);
+
+  var h2 = document.createElement("h2");
+  h2.className = "setup-title";
+  h2.textContent = "🔑 Familie beitreten";
+  s.appendChild(h2);
+  var sub = document.createElement("p");
+  sub.className = "setup-sub";
+  sub.textContent = "Gib den 6-stelligen Code deiner Familie ein";
+  s.appendChild(sub);
+
+  var codeInp = document.createElement("input");
+  codeInp.className = "code-input";
+  codeInp.placeholder = "z.B. AB1234";
+  codeInp.maxLength = 6;
+  codeInp.oninput = function(e){ codeInp.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""); };
+  s.appendChild(codeInp);
+
+  var joinBtn = document.createElement("button");
+  joinBtn.className = "btn-primary";
+  joinBtn.textContent = "Beitreten";
+  joinBtn.onclick = async function() {
+    var code = codeInp.value.trim();
+    if(code.length !== 6) { toast("Bitte 6-stelligen Code eingeben","#e07b8a"); return; }
+    joinBtn.textContent = "Suche..."; joinBtn.disabled = true;
+    try {
+      var fid = "FAM_"+code;
+      var snap = await getDoc(doc(db,"families",fid));
+      if(!snap.exists()) { toast("Familie nicht gefunden ❌","#e07b8a"); joinBtn.textContent="Beitreten"; joinBtn.disabled=false; return; }
+      state.familyId = fid; state.familyData = snap.data();
+      saveFamily(fid);
+      showLogin();
+    } catch(e) { toast("Fehler","#e07b8a"); joinBtn.textContent="Beitreten"; joinBtn.disabled=false; }
+  };
+  s.appendChild(joinBtn);
+
+  // Forgot code
+  var div = document.createElement("div");
+  div.className = "divider";
+  div.textContent = "— oder —";
+  s.appendChild(div);
+  var forgotLbl = document.createElement("div");
+  forgotLbl.className = "forgot-label";
+  forgotLbl.textContent = "Code vergessen? 🤔";
+  s.appendChild(forgotLbl);
+
+  var emailInp = document.createElement("input");
+  emailInp.className = "form-input";
+  emailInp.placeholder = "E-Mail der Familie";
+  emailInp.type = "email";
+  s.appendChild(emailInp);
+
+  var sendBtn = document.createElement("button");
+  sendBtn.className = "btn-outline";
+  sendBtn.style.width = "100%";
+  sendBtn.textContent = "📧 Code per E-Mail schicken";
+  sendBtn.onclick = async function() {
+    var email = emailInp.value.trim();
+    if(!email) { toast("Bitte E-Mail eingeben","#e07b8a"); return; }
+    sendBtn.textContent = "Suche..."; sendBtn.disabled = true;
+    try {
+      var q2 = query(collection(db,"families"), where("email","==",email));
+      var snap2 = await getDocs(q2);
+      if(snap2.empty) { toast("Keine Familie mit dieser E-Mail","#e07b8a"); sendBtn.textContent="📧 Code senden"; sendBtn.disabled=false; return; }
+      var fam = snap2.docs[0].data();
+      var sent = await sendCode(email, fam.name, fam.code);
+      if(sent) toast("Code gesendet an "+email+" 📧");
+      else toast("E-Mail Fehler","#e07b8a");
+    } catch(e) { toast("Fehler","#e07b8a"); }
+    sendBtn.textContent = "📧 Code per E-Mail schicken"; sendBtn.disabled = false;
+  };
+  s.appendChild(sendBtn);
+}
+
+// LOGIN
+function showLogin() {
+  show("login-screen");
+  var s = document.getElementById("login-screen");
+  s.innerHTML = "";
+
+  var title = document.createElement("h2");
+  title.className = "family-title";
+  title.textContent = state.familyData.name;
+  s.appendChild(title);
+  var sub = document.createElement("p");
+  sub.className = "family-sub";
+  sub.textContent = "Wer bist du?";
+  s.appendChild(sub);
+
+  var grid = document.createElement("div");
+  grid.className = "member-grid";
+  state.familyData.members.forEach(function(m) {
+    var card = document.createElement("button");
+    card.className = "member-card";
+    card.style.cssText = "background:rgba(255,255,255,0.06);border:2px solid "+m.color+"40;cursor:pointer;";
+    card.innerHTML = "<div class='member-card-emoji'>"+m.emoji+"</div><div class='member-card-name'>"+m.name+(m.isAdmin?"<span style='background:#f5a623;color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;margin-left:4px;'>ADMIN</span>":"")+"</div><div class='member-card-bar' style='background:"+m.color+"'></div>";
+    card.onclick = function() { state.pinTarget = m; state.pinInput = ""; showPin(); };
+    grid.appendChild(card);
+  });
+  s.appendChild(grid);
+
+  var changeBtn = document.createElement("button");
+  changeBtn.className = "change-family-btn";
+  changeBtn.textContent = "Familie wechseln";
+  changeBtn.onclick = function() { clearSavedFamily(); state.familyId=null; state.familyData=null; showWelcome(); };
+  s.appendChild(changeBtn);
+
+  var admin = state.familyData.members.find(function(m){return m.isAdmin;});
+  if(admin) {
+    var delBtn = document.createElement("button");
+    delBtn.className = "delete-family-btn";
+    delBtn.textContent = "Familie löschen (Admin)";
+    delBtn.onclick = async function() {
+      if(!confirm("Familie und alle Daten löschen?")) return;
+      delBtn.textContent = "Wird gelöscht..."; delBtn.disabled = true;
+      try {
+        var cols = ["events","todos","shopping","chores","pinboard"];
+        for(var i=0;i<cols.length;i++) {
+          var snap = await getDocs(collection(db,"families",state.familyId,cols[i]));
+          for(var j=0;j<snap.docs.length;j++) await deleteDoc(snap.docs[j].ref);
+        }
+        await deleteDoc(doc(db,"families",state.familyId));
+        clearSavedFamily(); state.familyId=null; state.familyData=null;
+        toast("Familie gelöscht 🗑️","#e07b8a");
+        setTimeout(showWelcome, 500);
+      } catch(e) { console.error(e); toast("Fehler","#e07b8a"); delBtn.textContent="Familie löschen (Admin)"; delBtn.disabled=false; }
+    };
+    s.appendChild(delBtn);
+  }
+}
+
+// PIN
+function showPin() {
+  show("pin-screen");
+  var s = document.getElementById("pin-screen");
+  s.innerHTML = "";
+  var m = state.pinTarget;
+
+  var box = document.createElement("div");
+  box.className = "pin-box";
+  box.innerHTML = "<div class='pin-avatar'>"+m.emoji+"</div><div class='pin-name'>"+m.name+"</div><div class='pin-hint'>PIN eingeben</div>";
+
+  var dotsDiv = document.createElement("div");
+  dotsDiv.className = "pin-dots";
+  for(var i=0;i<4;i++){
+    var dot = document.createElement("div");
+    dot.className = "pin-dot" + (state.pinInput.length>i?" filled":"");
+    if(state.pinInput.length>i) dot.style.background = m.color;
+    dotsDiv.appendChild(dot);
+  }
+  box.appendChild(dotsDiv);
+
+  var grid = document.createElement("div");
+  grid.className = "pin-grid";
+  [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(function(k) {
+    var btn = document.createElement("button");
+    btn.className = "pin-key" + (k===""?" empty":"");
+    btn.textContent = String(k);
+    if(k !== "") {
+      btn.onclick = function() {
+        if(k === "⌫") { state.pinInput = state.pinInput.slice(0,-1); showPin(); }
+        else if(state.pinInput.length < 4) {
+          state.pinInput += k;
+          showPin();
+          if(state.pinInput.length === 4) {
+            setTimeout(function() {
+              if(state.pinInput === state.pinTarget.pin) {
+                state.loggedIn = state.pinTarget;
+                state.pinTarget = null; state.pinInput = "";
+                startListeners();
+                showMainApp();
+              } else {
+                state.pinInput = "";
+                toast("Falsche PIN ❌","#e07b8a");
+                showPin();
+              }
+            }, 200);
+          }
+        }
+      };
+    }
+    grid.appendChild(btn);
+  });
+  box.appendChild(grid);
+
+  var backBtn = document.createElement("button");
+  backBtn.className = "pin-back";
+  backBtn.textContent = "← Zurück";
+  backBtn.onclick = function() { state.pinTarget=null; state.pinInput=""; showLogin(); };
+  box.appendChild(backBtn);
+  s.appendChild(box);
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
+var TABS = [
+  {id:"calendar",icon:"📅",label:"Kalender"},
+  {id:"todo",icon:"✅",label:"To-do"},
+  {id:"shopping",icon:"🛒",label:"Einkauf"},
+  {id:"chores",icon:"🏠",label:"Haushalt"},
+  {id:"pinboard",icon:"📌",label:"Pinnwand"},
+];
+
+function showMainApp() {
+  show("main-app");
+  var me = state.loggedIn;
+
+  // Header
+  var hdr = document.getElementById("app-header");
+  hdr.style.background = "linear-gradient(135deg,"+me.color+","+me.color+"cc)";
+  hdr.innerHTML = "<div><div class='header-sub'>Angemeldet als</div><div class='header-name'>"+me.emoji+" "+me.name+"</div></div>";
+  var logoutBtn = document.createElement("button");
+  logoutBtn.className = "logout-btn";
+  logoutBtn.textContent = "Abmelden";
+  logoutBtn.onclick = function() { state.loggedIn=null; state.unsubscribers.forEach(function(u){u();}); showLogin(); };
+  hdr.appendChild(logoutBtn);
+
+  renderTabBar();
+  renderBottomNav();
+  renderTab();
+}
+
+function renderTabBar() {
+  var bar = document.getElementById("tab-bar");
+  bar.innerHTML = "";
+  var me = state.loggedIn;
+  TABS.forEach(function(t) {
+    var btn = document.createElement("button");
+    btn.className = "tab-btn";
+    btn.textContent = t.icon+" "+t.label;
+    btn.style.color = state.currentTab===t.id ? me.color : "#aaa";
+    btn.style.borderBottomColor = state.currentTab===t.id ? me.color : "transparent";
+    btn.style.fontWeight = state.currentTab===t.id ? "700" : "400";
+    btn.onclick = function() { state.currentTab=t.id; renderTabBar(); renderBottomNav(); renderTab(); };
+    bar.appendChild(btn);
+  });
+}
+
+function renderBottomNav() {
+  var nav = document.getElementById("bottom-nav");
+  nav.innerHTML = "";
+  var me = state.loggedIn;
+  TABS.forEach(function(t) {
+    var btn = document.createElement("button");
+    btn.className = "nav-btn";
+    btn.innerHTML = "<span class='nav-icon'>"+t.icon+"</span>"+t.label;
+    btn.style.color = state.currentTab===t.id ? me.color : "#c0c4d0";
+    btn.onclick = function() { state.currentTab=t.id; renderTabBar(); renderBottomNav(); renderTab(); };
+    nav.appendChild(btn);
+  });
+}
+
+function renderTab() {
+  var content = document.getElementById("tab-content");
+  content.innerHTML = "";
+  if(state.currentTab==="calendar") renderCalendar(content);
+  else if(state.currentTab==="todo") renderTodo(content);
+  else if(state.currentTab==="shopping") renderShopping(content);
+  else if(state.currentTab==="chores") renderChores(content);
+  else if(state.currentTab==="pinboard") renderPinboard(content);
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+function renderCalendar(content) {
+  var me = state.loggedIn;
+
+  // Week header
+  var hdrDiv = document.createElement("div");
+  hdrDiv.style.cssText = "background:#fff;padding:14px 16px 12px;border-bottom:1px solid #eef0f6;margin:-16px -16px 16px;";
+
+  var navDiv = document.createElement("div");
+  navDiv.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;";
+
+  var prevBtn = document.createElement("button");
+  prevBtn.style.cssText = "background:none;border:1.5px solid #e8eaf0;border-radius:10px;width:34px;height:34px;font-size:18px;color:#888;cursor:pointer;";
+  prevBtn.textContent = "‹";
+  prevBtn.onclick = function() { state.weekOffset--; state.selectedDay=null; renderTab(); };
+
+  var nextBtn = document.createElement("button");
+  nextBtn.style.cssText = "background:none;border:1.5px solid #e8eaf0;border-radius:10px;width:34px;height:34px;font-size:18px;color:#888;cursor:pointer;";
+  nextBtn.textContent = "›";
+  nextBtn.onclick = function() { state.weekOffset++; state.selectedDay=null; renderTab(); };
+
+  var label = state.weekOffset===0?"Diese Woche":state.weekOffset===1?"Nächste Woche":state.weekOffset===-1?"Letzte Woche":"Woche "+(state.weekOffset>0?"+":"")+state.weekOffset;
+  var labelSpan = document.createElement("span");
+  labelSpan.style.cssText = "font-size:14px;color:#666;font-style:italic;";
+  labelSpan.textContent = label;
+
+  navDiv.appendChild(prevBtn); navDiv.appendChild(labelSpan); navDiv.appendChild(nextBtn);
+  hdrDiv.appendChild(navDiv);
+
+  // Get week dates
+  var weekDates = [];
+  for(var i=0;i<7;i++){
+    var d = new Date(TODAY);
+    var day = d.getDay();
+    var diff = day===0?-6:1-day;
+    d.setDate(d.getDate()+diff+state.weekOffset*7+i);
+    weekDates.push(d);
+  }
+
+  var grid = document.createElement("div");
+  grid.className = "week-grid";
+  weekDates.forEach(function(d) {
+    var df = toDateStr(d);
+    var hasEvt = state.events.some(function(e){return e.date===df;});
+    var isToday = df===todayStr;
+    var isSel = state.selectedDay && toDateStr(state.selectedDay)===df;
+    var btn = document.createElement("button");
+    btn.className = "day-btn";
+    btn.style.background = isSel?me.color:isToday?me.color+"22":"transparent";
+    btn.style.color = isSel?"#fff":isToday?me.color:"#555";
+
+    var dayName = document.createElement("span");
+    dayName.style.cssText = "font-size:9px;opacity:.6;";
+    dayName.textContent = DAYS_SHORT[d.getDay()];
+    btn.appendChild(dayName);
+
+    var dayNum = document.createElement("span");
+    dayNum.style.cssText = "font-size:16px;font-weight:"+(isToday?"700":"400")+";";
+    dayNum.textContent = d.getDate();
+    btn.appendChild(dayNum);
+
+    if(hasEvt) {
+      var dot = document.createElement("div");
+      dot.style.cssText = "width:5px;height:5px;border-radius:50%;background:"+(isSel?"#fff":me.color)+";";
+      btn.appendChild(dot);
+    }
+
+    btn.onclick = function(){ state.selectedDay = isSel?null:d; renderTab(); };
+    grid.appendChild(btn);
+  });
+  hdrDiv.appendChild(grid);
+  content.appendChild(hdrDiv);
+
+  // Events list
+  var sh = document.createElement("div");
+  sh.className = "section-head";
+
+  if(state.selectedDay) {
+    var df2 = toDateStr(state.selectedDay);
+    var dayEvts = state.events.filter(function(e){return e.date===df2;}).sort(function(a,b){return (a.time||"").localeCompare(b.time||"");});
+    var titleDiv = document.createElement("div");
+    titleDiv.className = "section-title";
+    titleDiv.textContent = DAYS_SHORT[state.selectedDay.getDay()]+", "+state.selectedDay.getDate()+". "+MONTHS_FULL[state.selectedDay.getMonth()];
+    sh.appendChild(titleDiv);
+    var addBtn = document.createElement("button");
+    addBtn.className = "pill-btn";
+    addBtn.style.background = me.color;
+    addBtn.textContent = "+ Termin";
+    addBtn.onclick = function(){ openModal("event", df2); };
+    sh.appendChild(addBtn);
+    content.appendChild(sh);
+    if(!dayEvts.length) { var em = document.createElement("div"); em.className="empty-state"; em.textContent="Keine Termine"; content.appendChild(em); }
+    dayEvts.forEach(function(ev){ content.appendChild(makeEventCard(ev)); });
+  } else {
+    var titleDiv2 = document.createElement("div");
+    titleDiv2.className = "section-title";
+    titleDiv2.textContent = "Alle Termine";
+    sh.appendChild(titleDiv2);
+    var addBtn2 = document.createElement("button");
+    addBtn2.className = "pill-btn";
+    addBtn2.style.background = me.color;
+    addBtn2.textContent = "+ Termin";
+    addBtn2.onclick = function(){ openModal("event", todayStr); };
+    sh.appendChild(addBtn2);
+    content.appendChild(sh);
+    var sorted = state.events.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+    if(!sorted.length) { var em2=document.createElement("div"); em2.className="empty-state"; em2.textContent="Noch keine Termine"; content.appendChild(em2); }
+    sorted.forEach(function(ev){ content.appendChild(makeEventCard(ev)); });
+  }
+}
+
+function makeEventCard(ev) {
+  var m = getMbr(ev.memberId);
+  var c = getCat(ev.category);
+  var card = document.createElement("div");
+  card.className = "card event-card";
+  card.style.borderLeftColor = c.color;
+
+  var icon = document.createElement("div");
+  icon.style.cssText = "font-size:22px;padding-top:2px;";
+  icon.textContent = c.icon;
+  card.appendChild(icon);
+
+  var info = document.createElement("div");
+  info.style.flex = "1";
+  var titleEl = document.createElement("div");
+  titleEl.style.cssText = "font-weight:600;color:#222;font-size:15px;";
+  titleEl.textContent = ev.title;
+  info.appendChild(titleEl);
+  var metaEl = document.createElement("div");
+  metaEl.style.cssText = "color:#aaa;font-size:11px;margin-top:2px;";
+  metaEl.textContent = displayDate(ev.date)+(ev.time?" · "+ev.time:"")+" · "+m.emoji+" "+m.name;
+  info.appendChild(metaEl);
+
+  // Reactions
+  var reacts = document.createElement("div");
+  reacts.style.cssText = "display:flex;gap:5px;margin-top:7px;";
+  ["👍","❤️","😮","😂"].forEach(function(emoji) {
+    var reactions = ev.reactions||{};
+    var myR = reactions[state.loggedIn.id];
+    var count = Object.values(reactions).filter(function(r){return r===emoji;}).length;
+    var rbtn = document.createElement("button");
+    rbtn.className = "reaction-btn";
+    rbtn.style.cssText = "padding:3px 9px;border-radius:12px;border:none;font-size:13px;cursor:pointer;background:"+(myR===emoji?state.loggedIn.color+"22":"#f5f7fc")+";font-weight:"+(myR===emoji?"700":"400")+";";
+    rbtn.textContent = emoji+(count?" "+count:"");
+    rbtn.onclick = function() {
+      var newR = Object.assign({}, reactions);
+      newR[state.loggedIn.id] = myR===emoji?null:emoji;
+      updFS("events",ev.id,{reactions:newR});
+    };
+    reacts.appendChild(rbtn);
+  });
+  info.appendChild(reacts);
+  card.appendChild(info);
+
+  if(ev.memberId===state.loggedIn.id || state.loggedIn.isAdmin) {
+    var del = document.createElement("button");
+    del.style.cssText = "background:none;border:none;color:#ddd;font-size:20px;padding:0 0 0 8px;cursor:pointer;";
+    del.textContent = "×";
+    del.onclick = function() { delFS("events",ev.id); toast("Gelöscht","#e07b8a"); };
+    card.appendChild(del);
+  }
+  return card;
+}
+
+// ── TODO ──────────────────────────────────────────────────────────────────────
+function renderTodo(content) {
+  var me = state.loggedIn;
+
+  var subRow = document.createElement("div");
+  subRow.className = "sub-tab-row";
+  [{id:"general",label:"🌍 Allgemein"},{id:"private",label:"🔒 Privat"}].forEach(function(t) {
+    var btn = document.createElement("button");
+    btn.className = "sub-tab-btn";
+    btn.textContent = t.label;
+    btn.style.background = state.todoTab===t.id?me.color:"transparent";
+    btn.style.color = state.todoTab===t.id?"#fff":"#aaa";
+    btn.style.fontWeight = state.todoTab===t.id?"700":"400";
+    btn.onclick = function() { state.todoTab=t.id; renderTab(); };
+    subRow.appendChild(btn);
+  });
+  content.appendChild(subRow);
+
+  var filtered = state.todos.filter(function(t) {
+    if(state.todoTab==="general") return t.type==="general";
+    return t.type==="private" && t.memberId===me.id;
+  });
+
+  PRIOS.forEach(function(prio) {
+    var items = filtered.filter(function(t){return t.priority===prio.id;});
+    if(!items.length) return;
+    var prioLbl = document.createElement("div");
+    prioLbl.style.cssText = "font-size:11px;color:"+prio.color+";font-weight:700;margin-bottom:8px;letter-spacing:0.5px;text-transform:uppercase;";
+    prioLbl.textContent = prio.icon+" "+prio.label;
+    content.appendChild(prioLbl);
+    items.forEach(function(todo) {
+      var tm = getMbr(todo.memberId);
+      var overdue = todo.due && todo.due<todayStr && !todo.done;
+      var card = document.createElement("div");
+      card.className = "card todo-card";
+      card.style.opacity = todo.done?"0.55":"1";
+
+      var chk = document.createElement("button");
+      chk.className = "check-circle";
+      chk.style.cssText = "width:26px;height:26px;border-color:"+(todo.done?tm.color:"#ddd")+";background:"+(todo.done?tm.color:"transparent")+";margin-top:1px;cursor:pointer;";
+      chk.textContent = todo.done?"✓":"";
+      chk.onclick = function(){ updFS("todos",todo.id,{done:!todo.done}); };
+      card.appendChild(chk);
+
+      var info = document.createElement("div");
+      info.style.flex = "1";
+      var txt = document.createElement("div");
+      txt.style.cssText = "font-size:14px;color:#222;text-decoration:"+(todo.done?"line-through":"none")+";font-weight:500;";
+      txt.textContent = todo.text;
+      info.appendChild(txt);
+      var meta = document.createElement("div");
+      meta.style.cssText = "font-size:11px;color:#bbb;margin-top:4px;";
+      meta.textContent = tm.emoji+" "+tm.name+(todo.due?" · 📅 "+displayDate(todo.due)+(overdue?" ⚠️":""):"");
+      info.appendChild(meta);
+      card.appendChild(info);
+
+      var del = document.createElement("button");
+      del.style.cssText = "background:none;border:none;color:#ddd;font-size:20px;cursor:pointer;";
+      del.textContent = "×";
+      del.onclick = function(){ delFS("todos",todo.id); };
+      card.appendChild(del);
+      content.appendChild(card);
+    });
+  });
+
+  if(!filtered.length) { var em=document.createElement("div"); em.className="empty-state"; em.textContent="Keine Aufgaben"; content.appendChild(em); }
+
+  var addBtn = document.createElement("button");
+  addBtn.className = "full-btn";
+  addBtn.style.cssText = "background:"+me.color+";margin-top:8px;";
+  addBtn.textContent = "+ Aufgabe hinzufügen";
+  addBtn.onclick = function(){ openModal("todo"); };
+  content.appendChild(addBtn);
+}
+
+// ── SHOPPING ──────────────────────────────────────────────────────────────────
+function renderShopping(content) {
+  var me = state.loggedIn;
+  var sh = document.createElement("div");
+  sh.className = "section-head";
+  var left = document.createElement("div");
+  left.innerHTML = "<div class='section-title'>🛒 Einkaufsliste</div><div style='font-size:11px;color:#bbb;margin-top:2px;'>"+state.shopping.filter(function(s){return !s.done;}).length+" offen</div>";
+  sh.appendChild(left);
+  var clrBtn = document.createElement("button");
+  clrBtn.className = "pill-btn";
+  clrBtn.style.background = "#e07b8a";
+  clrBtn.textContent = "Erledigt löschen";
+  clrBtn.onclick = async function() {
+    var done = state.shopping.filter(function(s){return s.done;});
+    for(var i=0;i<done.length;i++) await delFS("shopping",done[i].id);
+  };
+  sh.appendChild(clrBtn);
+  content.appendChild(sh);
+
+  state.shopping.filter(function(s){return !s.done;}).forEach(function(item){ content.appendChild(makeShopCard(item)); });
+  var donItems = state.shopping.filter(function(s){return s.done;});
+  if(donItems.length) {
+    var sep = document.createElement("div");
+    sep.style.cssText = "font-size:11px;color:#ccc;margin:14px 0 8px;text-align:center;";
+    sep.textContent = "— Erledigt —";
+    content.appendChild(sep);
+    donItems.forEach(function(item){ content.appendChild(makeShopCard(item)); });
+  }
+  if(!state.shopping.length) { var em=document.createElement("div"); em.className="empty-state"; em.textContent="Liste ist leer"; content.appendChild(em); }
+
+  var addBtn = document.createElement("button");
+  addBtn.className = "full-btn";
+  addBtn.style.cssText = "background:"+me.color+";margin-top:12px;";
+  addBtn.textContent = "+ Artikel hinzufügen";
+  addBtn.onclick = function(){ openModal("shopping"); };
+  content.appendChild(addBtn);
+}
+
+function makeShopCard(item) {
+  var m = getMbr(item.memberId);
+  var card = document.createElement("div");
+  card.className = "card shop-card";
+  card.style.opacity = item.done?"0.5":"1";
+  var chk = document.createElement("button");
+  chk.className = "check-circle";
+  chk.style.cssText = "width:26px;height:26px;border-color:"+(item.done?"#4cbb8a":"#ddd")+";background:"+(item.done?"#4cbb8a":"transparent")+";cursor:pointer;";
+  chk.textContent = item.done?"✓":"";
+  chk.onclick = function(){ updFS("shopping",item.id,{done:!item.done}); };
+  card.appendChild(chk);
+  var info = document.createElement("div");
+  info.style.flex = "1";
+  info.innerHTML = "<div style='font-size:14px;color:#222;text-decoration:"+(item.done?"line-through":"none")+";font-weight:500;'>"+item.text+"</div><div style='font-size:11px;color:#bbb;'>"+m.emoji+" "+m.name+" · "+item.qty+"</div>";
+  card.appendChild(info);
+  var del = document.createElement("button");
+  del.style.cssText = "background:none;border:none;color:#ddd;font-size:20px;cursor:pointer;";
+  del.textContent = "×";
+  del.onclick = function(){ delFS("shopping",item.id); };
+  card.appendChild(del);
+  return card;
+}
+
+// ── CHORES ────────────────────────────────────────────────────────────────────
+function renderChores(content) {
+  var me = state.loggedIn;
+  var sh = document.createElement("div");
+  sh.className = "section-head";
+  sh.innerHTML = "<div class='section-title'>🏠 Haushaltsplan</div>";
+  var addBtn = document.createElement("button");
+  addBtn.className = "pill-btn";
+  addBtn.style.background = me.color;
+  addBtn.textContent = "+ Aufgabe";
+  addBtn.onclick = function(){ openModal("chore"); };
+  sh.appendChild(addBtn);
+  content.appendChild(sh);
+
+  state.familyData.members.forEach(function(m) {
+    var myC = state.chores.filter(function(c){return c.assignedTo===m.id;});
+    if(!myC.length) return;
+    var sec = document.createElement("div");
+    sec.style.marginBottom = "18px";
+    var hdr = document.createElement("div");
+    hdr.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:10px;";
+    hdr.innerHTML = "<span style='font-size:22px;'>"+m.emoji+"</span><span style='font-weight:700;color:"+m.color+";font-size:15px;'>"+m.name+"</span><span style='font-size:11px;color:#bbb;'>"+myC.filter(function(c){return c.done;}).length+"/"+myC.length+"</span>";
+    sec.appendChild(hdr);
+    myC.forEach(function(ch) {
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.cssText = "display:flex;align-items:center;gap:12px;opacity:"+(ch.done?"0.6":"1")+";margin-bottom:6px;";
+      var chk = document.createElement("button");
+      chk.className = "check-circle";
+      chk.style.cssText = "width:26px;height:26px;border-color:"+(ch.done?m.color:"#ddd")+";background:"+(ch.done?m.color:"transparent")+";cursor:pointer;";
+      chk.textContent = ch.done?"✓":"";
+      chk.onclick = function(){ updFS("chores",ch.id,{done:!ch.done}); };
+      card.appendChild(chk);
+      var info = document.createElement("div");
+      info.style.flex = "1";
+      info.innerHTML = "<div style='font-size:14px;color:#222;text-decoration:"+(ch.done?"line-through":"none")+";font-weight:500;'>"+ch.task+"</div><div style='font-size:11px;color:#bbb;'>"+["So","Mo","Di","Mi","Do","Fr","Sa"][ch.weekDay]+"</div>";
+      card.appendChild(info);
+      sec.appendChild(card);
+    });
+    content.appendChild(sec);
+  });
+  if(!state.chores.length) { var em=document.createElement("div"); em.className="empty-state"; em.textContent="Noch keine Aufgaben"; content.appendChild(em); }
+}
+
+// ── PINBOARD ──────────────────────────────────────────────────────────────────
+function renderPinboard(content) {
+  var me = state.loggedIn;
+  var sh = document.createElement("div");
+  sh.className = "section-head";
+  sh.innerHTML = "<div class='section-title'>📌 Pinnwand</div>";
+  var addBtn = document.createElement("button");
+  addBtn.className = "pill-btn";
+  addBtn.style.background = me.color;
+  addBtn.textContent = "+ Notiz";
+  addBtn.onclick = function(){ openModal("pinboard"); };
+  sh.appendChild(addBtn);
+  content.appendChild(sh);
+
+  var sorted = state.pinboard.slice().sort(function(a,b){return (b.pinned?1:0)-(a.pinned?1:0);});
+  sorted.forEach(function(p) {
+    var m = getMbr(p.memberId);
+    var card = document.createElement("div");
+    card.className = "card pin-card";
+    card.style.background = p.pinned?"#fffbec":"#fff";
+    card.style.border = p.pinned?"2px solid #f5a62355":"1px solid #f0f0f0";
+    var txt = document.createElement("div");
+    txt.style.cssText = "font-size:14px;color:#333;line-height:1.6;margin-bottom:10px;";
+    txt.textContent = p.text;
+    card.appendChild(txt);
+    var footer = document.createElement("div");
+    footer.style.cssText = "display:flex;justify-content:space-between;align-items:center;";
+    var meta = document.createElement("div");
+    meta.style.cssText = "font-size:11px;color:#bbb;";
+    meta.textContent = m.emoji+" "+m.name+(p.timeStr?" · "+p.timeStr:"");
+    footer.appendChild(meta);
+    var acts = document.createElement("div");
+    acts.style.cssText = "display:flex;gap:8px;";
+    var pinBtn = document.createElement("button");
+    pinBtn.style.cssText = "background:none;border:none;font-size:18px;color:"+(p.pinned?"#f5a623":"#ddd")+";cursor:pointer;";
+    pinBtn.textContent = "📌";
+    pinBtn.onclick = function(){ updFS("pinboard",p.id,{pinned:!p.pinned}); };
+    acts.appendChild(pinBtn);
+    if(p.memberId===state.loggedIn.id||state.loggedIn.isAdmin) {
+      var del = document.createElement("button");
+      del.style.cssText = "background:none;border:none;color:#ddd;font-size:20px;cursor:pointer;";
+      del.textContent = "×";
+      del.onclick = function(){ delFS("pinboard",p.id); };
+      acts.appendChild(del);
+    }
+    footer.appendChild(acts);
+    card.appendChild(footer);
+    content.appendChild(card);
+  });
+  if(!state.pinboard.length) { var em=document.createElement("div"); em.className="empty-state"; em.textContent="Noch keine Notizen"; content.appendChild(em); }
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(type, prefillDate) {
+  var me = state.loggedIn;
+  var overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  var box = document.createElement("div");
+  box.className = "modal-box";
+  overlay.onclick = function(e){ if(e.target===overlay){ overlay.remove(); } };
+
+  function makeField(ph, type2) {
+    type2 = type2||"text";
+    var inp = document.createElement("input");
+    inp.className = "field-input";
+    inp.placeholder = ph||"";
+    inp.type = type2;
+    return inp;
+  }
+
+  if(type==="event") {
+    var titleEl = document.createElement("div"); titleEl.className="modal-title"; titleEl.textContent="📅 Neuer Termin"; box.appendChild(titleEl);
+    var titleInp = makeField("Titel"); box.appendChild(titleInp);
+    var dateRow = document.createElement("div"); dateRow.className="date-row";
+    var dateInp = makeField("","date"); dateInp.value=prefillDate||todayStr; dateRow.appendChild(dateInp);
+    var timeInp = makeField("","time"); timeInp.value="08:00"; dateRow.appendChild(timeInp);
+    box.appendChild(dateRow);
+
+    var catLbl = document.createElement("div"); catLbl.style.cssText="font-size:12px;color:#888;margin-bottom:8px;margin-top:4px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; catLbl.textContent="Kategorie"; box.appendChild(catLbl);
+    var selCat = "other";
+    var catRow = document.createElement("div"); catRow.className="cat-row";
+    CATS.forEach(function(c) {
+      var chip = document.createElement("button");
+      chip.className = "cat-chip";
+      chip.textContent = c.icon+" "+c.label;
+      chip.style.borderColor = c.id===selCat?c.color:"#eee";
+      chip.style.background = c.id===selCat?c.color+"18":"#fff";
+      chip.style.color = c.id===selCat?c.color:"#aaa";
+      chip.onclick = function() {
+        selCat = c.id;
+        catRow.querySelectorAll(".cat-chip").forEach(function(b,i) {
+          var cc = CATS[i];
+          b.style.borderColor = cc.id===selCat?cc.color:"#eee";
+          b.style.background = cc.id===selCat?cc.color+"18":"#fff";
+          b.style.color = cc.id===selCat?cc.color:"#aaa";
+        });
+      };
+      catRow.appendChild(chip);
+    });
+    box.appendChild(catRow);
+
+    var saveBtn = document.createElement("button"); saveBtn.className="full-btn"; saveBtn.style.background=me.color; saveBtn.textContent="Speichern";
+    saveBtn.onclick = async function() {
+      if(!titleInp.value.trim()) return;
+      saveBtn.textContent="Speichern..."; saveBtn.disabled=true;
+      await addFS("events",{title:titleInp.value.trim(),date:dateInp.value,time:timeInp.value,category:selCat,memberId:me.id,reactions:{}});
+      overlay.remove();
+      toast("Termin hinzugefügt ✅");
+      renderTab();
+    };
+    box.appendChild(saveBtn);
+  }
+
+  else if(type==="todo") {
+    var titleEl2=document.createElement("div"); titleEl2.className="modal-title"; titleEl2.textContent=state.todoTab==="general"?"🌍 Allgemeine Aufgabe":"🔒 Private Aufgabe"; box.appendChild(titleEl2);
+    var textInp=makeField("Was muss erledigt werden?"); box.appendChild(textInp);
+    var prioLbl=document.createElement("div"); prioLbl.style.cssText="font-size:12px;color:#888;margin-bottom:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; prioLbl.textContent="Priorität"; box.appendChild(prioLbl);
+    var selPrio="medium";
+    var prioRow=document.createElement("div"); prioRow.className="prio-row";
+    PRIOS.forEach(function(p){
+      var btn=document.createElement("button"); btn.className="prio-btn";
+      btn.textContent=p.icon+"\n"+p.label;
+      btn.style.borderColor=p.id===selPrio?p.color:"#eee";
+      btn.style.background=p.id===selPrio?p.color+"18":"#fff";
+      btn.style.color=p.id===selPrio?p.color:"#aaa";
+      btn.onclick=function(){
+        selPrio=p.id;
+        prioRow.querySelectorAll(".prio-btn").forEach(function(b,i){var pp=PRIOS[i];b.style.borderColor=pp.id===selPrio?pp.color:"#eee";b.style.background=pp.id===selPrio?pp.color+"18":"#fff";b.style.color=pp.id===selPrio?pp.color:"#aaa";});
+      };
+      prioRow.appendChild(btn);
+    });
+    box.appendChild(prioRow);
+    var dueLbl=document.createElement("div"); dueLbl.style.cssText="font-size:12px;color:#888;margin-bottom:6px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; dueLbl.textContent="Fälligkeitsdatum (optional)"; box.appendChild(dueLbl);
+    var dueInp=makeField("","date"); box.appendChild(dueInp);
+    var selAssign="";
+    if(state.todoTab==="general"){
+      var assLbl=document.createElement("div"); assLbl.style.cssText="font-size:12px;color:#888;margin-bottom:8px;margin-top:4px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; assLbl.textContent="Zuweisen an (optional)"; box.appendChild(assLbl);
+      var assRow=document.createElement("div"); assRow.className="assign-row";
+      state.familyData.members.forEach(function(m){
+        var btn=document.createElement("button"); btn.className="assign-btn";
+        btn.textContent=m.emoji+"\n"+m.name;
+        btn.style.borderColor=selAssign===m.id?m.color:"#eee";
+        btn.style.background=selAssign===m.id?m.color+"18":"#fff";
+        btn.style.color=selAssign===m.id?m.color:"#aaa";
+        btn.onclick=function(){
+          selAssign=selAssign===m.id?"":m.id;
+          assRow.querySelectorAll(".assign-btn").forEach(function(b,i){var mm=state.familyData.members[i];b.style.borderColor=mm.id===selAssign?mm.color:"#eee";b.style.background=mm.id===selAssign?mm.color+"18":"#fff";b.style.color=mm.id===selAssign?mm.color:"#aaa";});
+        };
+        assRow.appendChild(btn);
+      });
+      box.appendChild(assRow);
+    }
+    var saveBtn2=document.createElement("button"); saveBtn2.className="full-btn"; saveBtn2.style.background=me.color; saveBtn2.textContent="Hinzufügen";
+    saveBtn2.onclick=async function(){
+      if(!textInp.value.trim()) return;
+      await addFS("todos",{text:textInp.value.trim(),done:false,type:state.todoTab,memberId:me.id,priority:selPrio,due:dueInp.value,assignedTo:selAssign||null});
+      overlay.remove(); toast("Aufgabe hinzugefügt ✅"); renderTab();
+    };
+    box.appendChild(saveBtn2);
+  }
+
+  else if(type==="shopping") {
+    var titleEl3=document.createElement("div"); titleEl3.className="modal-title"; titleEl3.textContent="🛒 Artikel hinzufügen"; box.appendChild(titleEl3);
+    var textInp2=makeField("Was brauchen wir?"); box.appendChild(textInp2);
+    var qtyInp=makeField("Menge (z.B. 2, 500g)"); qtyInp.value="1"; box.appendChild(qtyInp);
+    var saveBtn3=document.createElement("button"); saveBtn3.className="full-btn"; saveBtn3.style.background=me.color; saveBtn3.textContent="Hinzufügen";
+    saveBtn3.onclick=async function(){
+      if(!textInp2.value.trim()) return;
+      await addFS("shopping",{text:textInp2.value.trim(),qty:qtyInp.value,done:false,memberId:me.id});
+      overlay.remove(); toast("Hinzugefügt 🛒"); renderTab();
+    };
+    box.appendChild(saveBtn3);
+  }
+
+  else if(type==="chore") {
+    var titleEl4=document.createElement("div"); titleEl4.className="modal-title"; titleEl4.textContent="🏠 Haushaltsaufgabe"; box.appendChild(titleEl4);
+    var taskInp=makeField("z.B. Staubsaugen, Abwasch..."); box.appendChild(taskInp);
+    var assLbl2=document.createElement("div"); assLbl2.style.cssText="font-size:12px;color:#888;margin-bottom:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; assLbl2.textContent="Zuweisen an"; box.appendChild(assLbl2);
+    var selM="";
+    var mRow=document.createElement("div"); mRow.className="assign-row";
+    state.familyData.members.forEach(function(m){
+      var btn=document.createElement("button"); btn.className="assign-btn";
+      btn.textContent=m.emoji+"\n"+m.name;
+      btn.style.borderColor=selM===m.id?m.color:"#eee";
+      btn.style.background=selM===m.id?m.color+"18":"#fff";
+      btn.style.color=selM===m.id?m.color:"#aaa";
+      btn.onclick=function(){
+        selM=m.id;
+        mRow.querySelectorAll(".assign-btn").forEach(function(b,i){var mm=state.familyData.members[i];b.style.borderColor=mm.id===selM?mm.color:"#eee";b.style.background=mm.id===selM?mm.color+"18":"#fff";b.style.color=mm.id===selM?mm.color:"#aaa";});
+      };
+      mRow.appendChild(btn);
+    });
+    box.appendChild(mRow);
+    var dayLbl=document.createElement("div"); dayLbl.style.cssText="font-size:12px;color:#888;margin-bottom:8px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;"; dayLbl.textContent="Wochentag"; box.appendChild(dayLbl);
+    var selDay=1;
+    var dayRow=document.createElement("div"); dayRow.className="day-row";
+    ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(function(d,i){
+      var btn=document.createElement("button"); btn.className="day-chip";
+      btn.textContent=d;
+      btn.style.borderColor=selDay===i+1?me.color:"#eee";
+      btn.style.background=selDay===i+1?me.color+"18":"#fff";
+      btn.style.color=selDay===i+1?me.color:"#aaa";
+      btn.onclick=function(){
+        selDay=i+1;
+        dayRow.querySelectorAll(".day-chip").forEach(function(b,j){b.style.borderColor=selDay===j+1?me.color:"#eee";b.style.background=selDay===j+1?me.color+"18":"#fff";b.style.color=selDay===j+1?me.color:"#aaa";});
+      };
+      dayRow.appendChild(btn);
+    });
+    box.appendChild(dayRow);
+    var saveBtn4=document.createElement("button"); saveBtn4.className="full-btn"; saveBtn4.style.background=me.color; saveBtn4.textContent="Hinzufügen";
+    saveBtn4.onclick=async function(){
+      if(!taskInp.value.trim()||!selM) return;
+      await addFS("chores",{task:taskInp.value.trim(),assignedTo:selM,weekDay:selDay,done:false});
+      overlay.remove(); toast("Aufgabe hinzugefügt 🏠"); renderTab();
+    };
+    box.appendChild(saveBtn4);
+  }
+
+  else if(type==="pinboard") {
+    var titleEl5=document.createElement("div"); titleEl5.className="modal-title"; titleEl5.textContent="📌 Neue Notiz"; box.appendChild(titleEl5);
+    var ta=document.createElement("textarea"); ta.className="field-input"; ta.placeholder="Schreib etwas für die Familie..."; ta.style.cssText="height:100px;resize:none;width:100%;"; box.appendChild(ta);
+    var saveBtn5=document.createElement("button"); saveBtn5.className="full-btn"; saveBtn5.style.background=me.color; saveBtn5.textContent="Posten";
+    saveBtn5.onclick=async function(){
+      if(!ta.value.trim()) return;
+      var now=new Date();
+      var ts=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+      await addFS("pinboard",{text:ta.value.trim(),memberId:me.id,timeStr:ts,pinned:false});
+      overlay.remove(); toast("Notiz gepostet 📌"); renderTab();
+    };
+    box.appendChild(saveBtn5);
+  }
+
+  var cancelBtn=document.createElement("button"); cancelBtn.className="cancel-btn"; cancelBtn.textContent="Abbrechen";
+  cancelBtn.onclick=function(){ overlay.remove(); };
+  box.appendChild(cancelBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  document.getElementById("btn-create").onclick = showSetup;
+  document.getElementById("btn-join").onclick = showJoin;
+  var saved = getSavedFamily();
+  if(saved) {
+    try {
+      var snap = await getDoc(doc(db,"families",saved));
+      if(snap.exists()) {
+        state.familyId = saved;
+        state.familyData = snap.data();
+        showLogin();
+        return;
+      }
+    } catch(e){}
+    clearSavedFamily();
+  }
+  showWelcome();
+}
+
+init();
+</script>
+
+<!-- HTML -->
+<div id="welcome-screen" style="display:flex;flex-direction:column;">
+  <div class="welcome-logo">🏡</div>
+  <h1 class="welcome-title">Familien-App</h1>
+  <p class="welcome-sub">Gemeinsam organisiert</p>
+  <div class="welcome-btns">
+    <button class="btn-primary" id="btn-create">🏠 Familie erfassen</button>
+    <button class="btn-outline" id="btn-join">🔑 Familie beitreten</button>
+  </div>
+</div>
+
+<div id="setup-screen" style="display:none;"></div>
+<div id="join-screen" style="display:none;"></div>
+<div id="code-screen" style="display:none;"></div>
+<div id="login-screen" style="display:none;"></div>
+<div id="pin-screen" style="display:none;"></div>
+
+<div id="main-app" style="display:none;">
+  <div id="app-header"></div>
+  <div id="tab-bar"></div>
+  <div id="tab-content" style="padding:16px;"></div>
+  <div id="bottom-nav"></div>
+</div>
+
+</body>
+</html>
